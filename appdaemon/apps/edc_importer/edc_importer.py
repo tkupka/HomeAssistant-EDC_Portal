@@ -28,7 +28,7 @@ class EDCImporter(hass.Hass):
         
         self.listen_event(self.edcStart, "edc_start")
         self.listen_event(self.edcStartMonth, "edc_start_month")
-        self.run_daily(self.run_daily_callback, "21:55:00")
+        self.run_daily(self.run_daily_callback, "05:00:00")
         
         self.log("Initialized")
         

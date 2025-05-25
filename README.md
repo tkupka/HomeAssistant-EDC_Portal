@@ -63,8 +63,10 @@ Nejdříve je potřeba vygenerovat `Long-lived access token`. Token se vygeneruj
 	* v části "System Packages" přidejte `chromium-chromedriver` a `chromium`. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
  
 	* v části "Python packages" přidejte _selenium_, _pandas_, _numpy==1.26.4_ a _bs4_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
-	* Klikněte na "Uložit". Konfigurace by měla odpovídat obrázku níže -> images/app_daemon_config.png`
+	* Klikněte na "Uložit". Konfigurace by měla odpovídat obrázku níže -> 
 
+
+![Appdaemon configuration](/images/app_daemon_config.png)
 
 
 4.Konfigurace Appdaemon se nachazí v adresáři `addon_configs/a0d7b954_appdaemon/appdaemon.yaml` . Konfigurace by měla vypadat takto:
@@ -137,7 +139,8 @@ Následně zkopírujte následuující adresáře do adresáře `config` na **HA
  
 Poté zkontrolujte zdali se v **HA** vytvořily statické entity.
 `Settings -> Devices... -> Entities`
-viz `entities.png`
+
+![EDC Entities](/images/entities.png )
 
 ### Dashboard
 Pro zobrazení dat je možno použí jakoukoli komponentu která má přístup ke statistikám. V dalsím textu budu používat [`apexcharts-card`](https://github.com/RomRider/apexcharts-card)
