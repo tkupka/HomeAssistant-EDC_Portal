@@ -39,7 +39,8 @@ Dynamické entity:
 * **edc_data_consumer_missed_<consumer EAN>_<interval>** - Elektřina u odběratele, která mohla být sdílena. tedy exitovala dostatečná kapacita u výrobce.
 * **edc_data_consumer_purchased_<consumer EAN>_<interval>** - Nakoupená elektrina odběratelem ze sítě.
 
-**Všechny hodnoty v `missed` jsou již také započteny do hodnot v `sold/purchsed` a není je tedy potřeba připočítávat.
+> [!IMPORTANT]
+> Všechny hodnoty v `missed` jsou již také započteny do hodnot v `sold/purchsed` a není je tedy potřeba připočítávat.
 
 
 ## Požadavky
@@ -258,6 +259,10 @@ series:
 
 ```
 
+> [!TIP]
+> Pokud v entit8ch změníte interval **daily** and **monthly** například `sensor.edc_data_producer_sold_network_<Producer EAN>_monthly` tak získáte graf s měsíční agregací
+> ![Producer Monthly ](/images/chart_producer_monthly.png )
+
 #### Data Konzumenta
 Z pohledu konzumera lze zobrazit:
 * Sdílenou energii pro jednotlivé EANy.
@@ -267,3 +272,121 @@ Z pohledu konzumera lze zobrazit:
 
 
 ![Consumer Daily](/images/chart_consumer_daily.png )
+
+```
+type: custom:apexcharts-card
+stacked: true
+graph_span: 25d
+span:
+  end: hour
+show:
+  last_updated: true
+header:
+  title: EDC Consumer Daily
+  show: true
+  show_states: true
+  colorize_states: true
+now:
+  show: true
+  color: red
+  label: Now
+apex_config:
+  chart:
+    height: 350
+    zoom:
+      type: x
+      enabled: true
+      autoScaleYaxis: false
+    toolbar:
+      show: true
+      autoSelected: zoom
+    xaxis.type: datetime
+all_series_config:
+  unit: kW
+  show:
+    extremas: false
+  stroke_width: 2
+  curve: smooth
+  type: column
+  opacity: 0.4
+  group_by:
+    func: sum
+    duration: 1d
+experimental:
+  color_threshold: false
+  brush: false
+series:
+  - entity: sensor.edc_data_shared_<Consumer EAN>_daily
+    name: Shared
+    invert: false
+    curve: smooth
+    color: rgb(92, 196, 159)
+    data_generator: |
+      const stat_entity = entity.entity_id.replace("sensor.", "sensor:");
+      var statistics = await hass.callWS({
+          type: 'recorder/statistics_during_period',
+          start_time: new Date(start).toISOString(),
+          end_time: new Date(end).toISOString(),
+          statistic_ids: [stat_entity],
+          period: "hour",
+      });
+      var stats = statistics[stat_entity];
+      var result = [];
+      var len = stats.length;
+      for (let i = 0; i < len; i++) {
+        let stat = stats[i].state;
+        result.push([(new Date(stats[i].end).getTime()),stat]);
+        }
+      return result;
+  - entity: sensor.edc_data_consumer_missed_<Consumer EAN>_daily
+    name: Missed Oportunity
+    color: rgb(255, 159, 105)
+    invert: false
+    curve: smooth
+    data_generator: |
+      const stat_entity = entity.entity_id.replace("sensor.", "sensor:");
+      var statistics = await hass.callWS({
+          type: 'recorder/statistics_during_period',
+          start_time: new Date(start).toISOString(),
+          end_time: new Date(end).toISOString(),
+          statistic_ids: [stat_entity],
+          period: "hour",
+      });
+      var stats = statistics[stat_entity];
+      var result = [];
+      var len = stats.length;
+      for (let i = 0; i < len; i++) {
+        let stat = stats[i].state;
+        result.push([(new Date(stats[i].end).getTime()),stat]);
+        }
+      return result;
+  - entity: sensor.edc_data_consumer_purchased_<Consumer EAN>_daily
+    name: Purchased from Network
+    color: rgb(251, 110, 108)
+    invert: false
+    curve: smooth
+    data_generator: |
+      const stat_entity = entity.entity_id.replace("sensor.", "sensor:");
+
+      var statistics = await hass.callWS({
+          type: 'recorder/statistics_during_period',
+          start_time: new Date(start).toISOString(),
+          end_time: new Date(end).toISOString(),
+          statistic_ids: [stat_entity],
+          period: "hour",
+      });
+      var stats = statistics[stat_entity];
+      var result = [];
+      var len = stats.length;
+      for (let i = 0; i < len; i++) {
+        let stat = stats[i].state;
+
+        result.push([(new Date(stats[i].end).getTime()),stat]);
+        }
+      return result;
+
+```
+
+> [!TIP]
+> Pokud v entit8ch změníte interval **daily** and **monthly** například `sensor.edc_data_consumer_purchased_<Consumer EAN>_monthly` tak získáte graf s měsíční agregací
+> ![Producer Monthly ](/images/chart_consumer_monthly.png )
