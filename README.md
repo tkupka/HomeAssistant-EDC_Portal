@@ -15,15 +15,15 @@ Data jsou stažena do externích long-term statistik, tudíž jsou k dispozici p
 
 Ostatní intervaly HA neuloží. Pokud někdo zjistí jak tyto statistiky uložit tak mi dejte vědět :-).
 
-Nejdříve se st8hnoout data z EDC port8lu a pak se vyrobí CSv export, který je nahrán jako statistika do HA.
+Nejdříve se st8hnoout data z EDC port8lu a pak se vygeneruje CSV export, který je nahrán jako statistika do HA.
 
-Jelikož se se statistiky nahrávají jako externí tak by v podstatě nebyla potřeba žádná entita. Ovšem pro zachování přehlednosti a jednodužšího hledání jsou vytvořeny také entity pod stejným ménem.
+Jelikož se se statistiky nahrávají jako externí tak by v podstatě nebyla potřeba žádná entita. Ovšem pro zachování přehlednosti a jednoduššího hledání jsou vytvořeny také entity pod stejným jménem.
 
 Systém má statické entity:
 * **edc_script_duration** - Doba běhu skriptu
 * **edc_script_status** - Parametry skriptu
-* **edc_producer_eans** -Seznam EANu dodávajících elektřinu
-* **edc_consumer_eans** - Seznam EANu kunzumujících 
+* **edc_producer_eans** -Seznam EANu produkujících elektřinu
+* **edc_consumer_eans** - Seznam EANu konzumujících  
 * **running** - Binární senzor při pěhu skriptu = `on`
 
 Systém má dynamické entity pro jednotlivé intervaly. Jméno intervalu je použito jako `suffix` jme entity.
@@ -35,8 +35,8 @@ Systém má dynamické entity pro jednotlivé intervaly. Jméno intervalu je pou
 Dynamické entity:
 * **edc_data_shared_<consumer EAN>_<interval>** - Sdílená elektřina odběrovým EAN-em
 * **edc_data_producer_missed_<producer EAN>_<interval>** - Elektřina prodána producentem do sítě, která ovšem mohla být sdílená. (Spotřebitelé měli dostatečný odběr ovšem pravděpodobně z důvodu nastaveni nebyla sdílená)
-* **edc_data_producer_sold_network__<producer EAN>_<interval>** - Elektřina prodána producentem do sítě pro kterou nebyl odběr o konzumerů.
-* **edc_data_consumer_missed_<consumer EAN>_<interval>** - Elektřina u odběratele, která mohla být sdílena. tedy exitovala dostatečná kapacita u výrobce.
+* **edc_data_producer_sold_network__<producer EAN>_<interval>** - Elektřina prodána producentem do sítě pro kterou nebyl odběr o konzumentů.
+* **edc_data_consumer_missed_<consumer EAN>_<interval>** - Elektřina u odběratele, která mohla být sdílena. tedy existovala  dostatečná kapacita u výrobce.
 * **edc_data_consumer_purchased_<consumer EAN>_<interval>** - Nakoupená elektrina odběratelem ze sítě.
 
 > [!IMPORTANT]
@@ -133,7 +133,7 @@ edc_exportGroup: ***
 
 ```
 
-Následně zkopírujte následuující adresáře do adresáře `config` na **HA**:
+Následně zkopírujte následující adresáře do adresáře `config` na **HA**:
 * **appdaemon**
 * **packages**
  
@@ -144,9 +144,9 @@ Poté zkontrolujte zdali se v **HA** vytvořily statické entity.
 ![EDC Entities](/images/entities.png )
 
 ### Dashboard
-Pro zobrazení dat je možno použí jakoukoli komponentu která má přístup ke statistikám. V dalsím textu budu používat [`apexcharts-card`](https://github.com/RomRider/apexcharts-card)
+Pro zobrazení dat je možno použí jakoukoli komponentu která má přístup ke statistikám. V dalším textu budu používat [`apexcharts-card`](https://github.com/RomRider/apexcharts-card)
 
-Data jde zobrazit z pohledu producenta a nebo konzumenta. v obou pohledech jsou k dispozoci denní a měsíční data.
+Data jde zobrazit z pohledu producenta a nebo konzumenta. v obou pohledech jsou k dispozici denní a měsíční data.
 
 #### Data Producenta
 Z pohledu producenta lze zobrazit:
@@ -264,7 +264,7 @@ series:
 > ![Producer Monthly ](/images/chart_producer_monthly.png )
 
 #### Data Konzumenta
-Z pohledu konzumera lze zobrazit:
+Z pohledu konzumenta lze zobrazit:
 * Sdílenou energii pro jednotlivé EANy.
 * Energii nakoupenou ze sítě, která se nepodařila nasdílet.
 * Ušlou příležitost pro jednotlivé EANy.

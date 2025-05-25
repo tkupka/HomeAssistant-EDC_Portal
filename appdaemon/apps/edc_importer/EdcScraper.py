@@ -212,6 +212,7 @@ class EdcScraper:
 
     def downloadExport(self, driver):
         self.clickOnElement(driver, "//table[contains(@class,'MuiTable-root')]//tr[1]//p[text()='Stáhnout']")
+        
         files = glob.glob(self.downloadDirectory + '/*')
         maxFile = max(files, key=os.path.getctime)
         path = Path(maxFile)

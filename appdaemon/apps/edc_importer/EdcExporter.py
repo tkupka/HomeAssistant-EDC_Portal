@@ -69,7 +69,7 @@ class EdcExporter:
 		for i, ean in enumerate(eans):
 			print(f"Exporting {dataType} EAN  [{ean.name}].")
 			sensorName = self.createSensor("edc_data", dataType, self.convertGroupinToName(grouping), ean.name)
-			file = self.exportFile(i, ean.name, sensorName, intervals, dataResolver, calculator, dataType)
+			file = self.exportFile(i, ean.name, sensorName, intervals, dataResolver, calculator, dataType, grouping)
 			self.uploadFile(file)
 		
 	#dataType: producer/consumer
@@ -89,8 +89,8 @@ class EdcExporter:
 		return completeSensorName
 
 
-	def exportFile(self, i, ean, sensorName, intervals: List[Interval], dataResolver, calculator: partial, dataType: AnyStr):
-		fileName = f"{dataType}_export_{ean}.csv"
+	def exportFile(self, i, ean, sensorName, intervals: List[Interval], dataResolver, calculator: partial, dataType: AnyStr, grouping: GroupingOptions):
+		fileName = f"{dataType}_export_{ean}_{grouping}.csv"
 		fileName = (self.dataDirectory / fileName)
 		print(f"Exporting file [{fileName.resolve()}]")
 		exportFile = fileName.open("w", encoding ="utf-8")

@@ -14,11 +14,11 @@ class TestScraper(unittest.TestCase):
         configuration = json.loads(configFile.read_text())
        
         month = dt.now().month
-        month = 4
+        #month = 4
         year = 2025
         scraper = EdcScraper("c:\\Java\\chromedriver-win64\\chromedriver.exe", configuration['user'], configuration['password'], configuration['group'], "..\\data")
         result = scraper.scrapeData(month, year)
-        print(f"Clean-up directory {result}")
+        print(f"Report file: {result}")
 
 
 if __name__ == '__main__':
