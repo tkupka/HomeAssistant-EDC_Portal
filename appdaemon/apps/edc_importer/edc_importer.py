@@ -35,12 +35,12 @@ class EDCImporter(hass.Hass):
     def run_daily_callback(self, data, **kwargs):
         year = dt.now().year
         month = dt.now().month
-        groupings = ["15m", "1d", "1m"]
+        groupings = ["1h", "1d", "1m"]
         self.executeEDC(month, year, groupings)
         
     def edcExecuteDefaultDataLoad(self):
         downloadIntervals= self.getLastMonths(dt.today(), 2)[::-1]
-        groupings = ["15m", "1d", "1m"]
+        groupings = ["1h", "1d", "1m"]
         for downloadInterval in downloadIntervals:
             year = downloadInterval[0]
             month = downloadInterval[1]
