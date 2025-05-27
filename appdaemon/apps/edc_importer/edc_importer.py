@@ -28,12 +28,15 @@ class EDCImporter(hass.Hass):
         
         self.listen_event(self.edcStart, "edc_start")
         self.listen_event(self.edcStartMonth, "edc_start_month")
-        self.run_daily(self.run_daily_callback, "05:00:00")
+        self.run_daily(self.run_daily_callback, "08:00:00")
         
         self.log("Initialized")
         
     def run_daily_callback(self, data, **kwargs):
-        self.edcExecuteDefaultDataLoad()
+        year = dt.now().year
+        month = dt.now().month
+        groupings = ["15m", "1d", "1m"]
+        self.executeEDC(month, year, groupings)
         
     def edcExecuteDefaultDataLoad(self):
         downloadIntervals= self.getLastMonths(dt.today(), 2)[::-1]
@@ -64,20 +67,20 @@ class EDCImporter(hass.Hass):
         else:
             year = dt.now().year
         
-        self.executeEDC(month, year, grouping)
+        self.executeEDC(month, year, [grouping])
         
         
     def executeEDC(self, month, year, groupings: List[GroupingOptions]):
-        self.set_state("sensor.edc_version", state=version,attributes={
+        self.set_state("input_text.edc_version", state=version,attributes={
             "friendly_name": "EDC Version",
         })
+        edcStartTime = dt.now()
         try:
-            edcStartTime = dt.now()
             groupingsNames =  "[%s]"%','.join(map(lambda grouping: self.edcExporter.convertGroupinToName(grouping), groupings))
             print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Starting EDC data load [{year}/{month}::{groupingsNames}]  *********************{Colors.RESET}")
             self.set_state("binary_sensor.edc_running", state="on")
             
-            self.set_state("sensor.edc_script_parameters", state=f"Time [{year}/{month}] :: Grouping [{groupingsNames}]")
+            self.set_state("input_text.edc_script_parameters", state=f"Time [{year}/{month}] :: Grouping [{groupingsNames}]")
             dataFile = self.edcScraper.scrapeData(month, year)
             if (dataFile is None):
                 return
@@ -91,17 +94,18 @@ class EDCImporter(hass.Hass):
             for grouping in groupings:
                 self.edcExporter.exportData(parsedCsv, grouping)
                 
+            
+            self.set_state("input_text.edc_script_status", state=f"OK")
+            
+            
+        except Exception as e:
+            self.set_state("input_text.edc_script_status", state=f"Failed")
+            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.RED}********************* Script failed : {str(e)} *********************{Colors.RESET}")
+        finally:
             edcEndTime = dt.now()
             edcDuration = edcEndTime - edcStartTime
             
-            self.set_state("sensor.edc_script_status", state=f"OK")
-            
-            
-        except:
-            self.set_state("sensor.edc_script_status", state=f"Failed")
-            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.RED}********************* Script failed *********************{Colors.RESET}")
-        finally:
-            self.set_state("sensor.edc_script_duration", state=f"{str(edcDuration).split('.')[0]}")
+            self.set_state("input_text.edc_script_duration", state=f"{str(edcDuration).split('.')[0]}")
             self.set_state("binary_sensor.edc_running", state="off")
             print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Finished in {edcDuration} *********************{Colors.RESET}")
 

@@ -30,7 +30,7 @@ class EdcExporter:
 		
 		
 	def exportSharedEnergy(self, parsedData: Csv, intervals: List[Interval], grouping: GroupingOptions):
-		#create sensors
+		#create entities
 		print(f"Exporting Shared energy for producer between EANS.")
 		#it might be consumer resolver....
 		dataResolver = partial(self.resolveProducer)
@@ -68,28 +68,28 @@ class EdcExporter:
 	def exportConsumptionForEans(self, intervals: List[Interval], eans: List[Ean], dataType: AnyStr, grouping: GroupingOptions, dataResolver: partial, calculator: partial):
 		for i, ean in enumerate(eans):
 			print(f"Exporting {dataType} EAN  [{ean.name}].")
-			sensorName = self.createSensor("edc_data", dataType, self.convertGroupinToName(grouping), ean.name)
-			file = self.exportFile(i, ean.name, sensorName, intervals, dataResolver, calculator, dataType, grouping)
+			entityName = self.createEntity("edc_data", dataType, self.convertGroupinToName(grouping), ean.name)
+			file = self.exportFile(i, ean.name, entityName, intervals, dataResolver, calculator, dataType, grouping)
 			self.uploadFile(file)
 		
 	#dataType: producer/consumer
 	#interval: hour/day/month
-	def createSensor(self, sensorBaseName: AnyStr, dataType: AnyStr, interval: AnyStr, ean: AnyStr):
-		completeSensorName = f"{sensorBaseName}_{dataType}_{ean}_{interval}"
+	def createEntity(self, entityBaseName: AnyStr, dataType: AnyStr, interval: AnyStr, ean: AnyStr):
+		completeEntityName = f"{entityBaseName}_{dataType}_{ean}_{interval}"
 		if (self.hass != 'undefined'):
-			print(f"Creating sensor [{completeSensorName}")
+			print(f"Creating entity [{completeEntityName}")
 			
-			self.hass.set_state(f"sensor.{completeSensorName}",state=f"{dt.now().strftime('%Y/%m/%d')}",attributes={
-				"unique_id": f"{completeSensorName}",
+			self.hass.set_state(f"input_number.{completeEntityName}",state=0,attributes={
+				"unique_id": f"{completeEntityName}",
 				"friendly_name": f"EDC {dataType.capitalize()} {interval.capitalize()} for EAN: {ean}",
 				"icon" : "mdi:database-arrow-down",
-#				"state_class": "measurement",
-#				"unit_of_measurement": "kWh"
+				"state_class": "measurement",
+				"unit_of_measurement": "kWh"
 			})
-		return completeSensorName
+		return completeEntityName
 
 
-	def exportFile(self, i, ean, sensorName, intervals: List[Interval], dataResolver, calculator: partial, dataType: AnyStr, grouping: GroupingOptions):
+	def exportFile(self, i, ean, entityName, intervals: List[Interval], dataResolver, calculator: partial, dataType: AnyStr, grouping: GroupingOptions):
 		fileName = f"{dataType}_export_{ean}_{grouping}.csv"
 		fileName = (self.dataDirectory / fileName)
 		print(f"Exporting file [{fileName.resolve()}]")
@@ -101,7 +101,7 @@ class EdcExporter:
 			convertedStart = dateObj.strftime('%d.%m.%Y %H:%M')
 			data = dataResolver(interval)
 			value = calculator(data[i])
-			exportFile.write(f"sensor:{sensorName};kWh;{convertedStart};{(value):.2f};0\n")
+			exportFile.write(f"input_number.{entityName};kWh;{convertedStart};{(value):.2f};0\n")
 		exportFile.close()
 		return fileName
 	
@@ -129,16 +129,19 @@ class EdcExporter:
 		print(f"Exporting consumer EANs [{eans}]")
 		self.exportEans(parsedData.consumerEans, "edc_consumer_eans")
 		
-	def exportEans(self, eans: List[Ean], sensorName: AnyStr):
+	def exportEans(self, eans: List[Ean], entityName: AnyStr):
 		if (self.hass != 'undefined'):
-			existingEansStr = self.hass.get_state(f"sensor.{sensorName}")
-			existingEans: set = set(json.loads(existingEansStr))
+			existingEansStr = self.hass.get_state(f"input_text.{entityName}")
+			try:
+				existingEans: set = set(json.loads(existingEansStr))
+			except:
+			  existingEans: set = set([])			
 			
 			for ean in eans:
 				existingEans.add(ean.name)
 			existingEansStr = json.dumps(list(existingEans))
 			
-			self.hass.set_state(f"sensor.{sensorName}", state = existingEansStr)
+			self.hass.set_state(f"input_text.{entityName}", state = existingEansStr)
 		
 		
 		

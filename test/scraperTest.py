@@ -16,7 +16,8 @@ class TestScraper(unittest.TestCase):
         month = dt.now().month
         #month = 4
         year = 2025
-        scraper = EdcScraper("c:\\Java\\chromedriver-win64\\chromedriver.exe", configuration['user'], configuration['password'], configuration['group'], "..\\data")
+        dataDirectory = str((Path.cwd() / "../data").resolve())
+        scraper = EdcScraper("c:\\Java\\chromedriver-win64\\chromedriver.exe", configuration['user'], configuration['password'], configuration['group'], dataDirectory)
         result = scraper.scrapeData(month, year)
         print(f"Report file: {result}")
 

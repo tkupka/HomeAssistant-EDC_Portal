@@ -14,12 +14,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
-from bs4 import BeautifulSoup
 import calendar
 import logging
 from pathlib import Path
 from Colors import Colors
-from pickle import FALSE
 
 
 class EdcScraper:
@@ -193,6 +191,7 @@ class EdcScraper:
             fileNameField.send_keys(self.exportedFile)
             #confirm export dialog
             self.clickOnElement(driver, "//button[normalize-space()='Exportovat']")
+            time.sleep(10) # wait for export
             #go to reports
             self.createScreenshot(driver, "report_dialog")
             self.clickOnElement(driver, "//button[normalize-space()='Přejít na reporty']")

@@ -28,6 +28,27 @@ template:
       - name: "EDC Running"
         unique_id: edc_running
         state: "off"
+input_text:
+  edc_script_duration:
+    name: edc_script_duration
+    icon: mdi:timelapse
+  edc_script_status:
+    name: edc_script_status
+    icon: mdi:list-status
+  edc_script_parameters:
+    name: edc_script_parameters
+    icon: mdi:code-brackets
+  edc_version:
+    name: edc_version
+    icon: mdi:check-decagram
+  edc_producer_eans:
+    name: edc_producer_eans
+    icon: mdi:list-status
+  edc_consumer_eans:
+    name: edc_consumer_eans
+    icon: mdi:list-status
+
+
 script:
   # script to load data
   edc_load_default_interval:
@@ -37,3 +58,19 @@ script:
         event_data: {}
     mode: single
     icon: "mdi:calendar-start-outline"
+
+homeassistant:
+  # customization of elements, setting name, icons etc.
+  customize:
+    input_text.edc_script_duration:
+      friendly_name: EDC Script Duration
+    input_text.edc_script_status:
+      friendly_name: EDC Script Status
+    input_text.edc_script_parameters:
+      friendly_name: EDC Script Parameters
+    edc_version:
+      friendly_name: EDC Version
+    edc_producer_eans:
+      friendly_name: EDC Producer EANs
+    edc_consumer_eans:
+      friendly_name: EDC Consumer EANs
