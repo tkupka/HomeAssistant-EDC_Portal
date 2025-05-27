@@ -299,8 +299,9 @@ series:
 ```
 
 > [!TIP]
-> Pokud v entitách změníte interval **daily** na **monthly** například `input%number.edc_data_producer_sold_network_<Producer EAN>_monthly` tak získáte graf s měsíční agregací
-> ![Producer Monthly ](/images/chart_producer_monthly.png )
+> Pokud v entitách změníte interval **daily** na **monthly** například `input_number.edc_data_producer_sold_network_<Producer EAN>_monthly` tak získáte graf s měsíční agregací
+
+![Producer Monthly ](/images/chart_producer_monthly.png )
 
 ```
 type: custom:apexcharts-card
@@ -514,8 +515,9 @@ series:
 ```
 
 > [!TIP]
-> Pokud v entitách změníte interval **daily** na **monthly** například `input%number.edc_data_consumer_purchased_<Consumer EAN>_monthly` tak získáte graf s měsíční agregací
-> ![Producer Monthly ](/images/chart_consumer_monthly.png )
+> Pokud v entitách změníte interval **daily** na **monthly** například `input_number.edc_data_consumer_purchased_<Consumer EAN>_monthly` tak získáte graf s měsíční agregací
+
+![Producer Monthly ](/images/chart_consumer_monthly.png )
 
 ```
 type: custom:apexcharts-card
