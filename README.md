@@ -1,7 +1,7 @@
 # HomeAssistant-EDC_Portal
 Stažení dat z EDC Portálu do Home Assistent. Projekt je inspirovan projektem [EdcReportAnalyzer](https://ondrejkarlik.github.io/EdcDataAnalyzer/dist/EdcReportAnalyzer.html)
 
-Stažení dat z EDC portálu do Home Assistenta. Data se kalkulují pro tyto intervaly:
+Data se kalkulují pro tyto intervaly:
 * `15m` - 15 minut
 * `1h` - hodina
 * `1d` - Den
