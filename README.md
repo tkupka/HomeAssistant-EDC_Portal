@@ -169,6 +169,10 @@ header:
   show: true
   show_states: false
   colorize_states: true
+now:
+  show: true
+  color: red
+  label: Now
 apex_config:
   chart:
     height: 350
@@ -207,13 +211,10 @@ all_series_config:
   curve: smooth
   type: area
   opacity: 0.4
-  group_by:
-    func: avg
-    duration: 1h
   statistics:
     type: state
     period: hour
-    align: middle
+    align: start
 experimental:
   color_threshold: false
   brush: false
@@ -251,12 +252,16 @@ type: custom:apexcharts-card
 stacked: true
 graph_span: 1month
 span:
-  end: hour
+  end: day
 header:
   title: EDC Producer Daily
   show: true
   show_states: true
   colorize_states: true
+now:
+  show: true
+  color: red
+  label: Now
 apex_config:
   chart:
     height: 350
@@ -288,13 +293,10 @@ all_series_config:
   curve: smooth
   type: column
   opacity: 0.4
-  group_by:
-    func: avg
-    duration: 1d
   statistics:
     type: state
     period: day
-    align: end
+    align: middle
 experimental:
   color_threshold: false
   brush: false
@@ -319,14 +321,18 @@ series:
 ```
 type: custom:apexcharts-card
 stacked: true
-graph_span: 1y
+graph_span: 1year
 span:
   end: month
 header:
   title: EDC Producer Monthly
   show: true
-  show_states: true
+  show_states: false
   colorize_states: true
+now:
+  show: true
+  color: red
+  label: Now
 apex_config:
   chart:
     height: 350
@@ -355,9 +361,6 @@ all_series_config:
   curve: smooth
   type: column
   opacity: 0.4
-  group_by:
-    func: avg
-    duration: 1month
   show:
     extremas: false
   statistics:
@@ -411,6 +414,10 @@ header:
   show: true
   show_states: false
   colorize_states: true
+now:
+  show: true
+  color: red
+  label: Now
 apex_config:
   chart:
     height: 350
@@ -431,6 +438,8 @@ apex_config:
         enabled: true
         padding: 2
         borderRadius: 1
+  yaxis:
+    decimals: 2
 all_series_config:
   unit: kW
   show:
@@ -439,13 +448,10 @@ all_series_config:
   curve: smooth
   type: area
   opacity: 0.4
-  group_by:
-    func: avg
-    duration: 1h
   statistics:
     type: state
     period: hour
-    align: middle
+    align: start
 experimental:
   color_threshold: false
   brush: false
@@ -514,13 +520,10 @@ all_series_config:
   curve: smooth
   type: column
   opacity: 0.4
-  group_by:
-    func: avg
-    duration: 1d
   statistics:
     type: state
     period: day
-    align: end
+    align: middle
 experimental:
   color_threshold: false
   brush: false
@@ -559,6 +562,10 @@ header:
   show: true
   show_states: false
   colorize_states: true
+now:
+  show: true
+  color: red
+  label: Now
 apex_config:
   chart:
     height: 350
@@ -587,9 +594,6 @@ all_series_config:
   curve: smooth
   type: column
   opacity: 0.4
-  group_by:
-    func: avg
-    duration: 1month
   show:
     extremas: false
   statistics:
