@@ -608,13 +608,14 @@ series:
 
   - entity: input_number.edc_data_consumer_missed_<Consumer EAN>_monthly
     name: Missed Oportunity
-    color: rgb(251, 110, 108)
+    color: rgb(181, 166, 66)
 
   - entity: input_number.edc_data_consumer_purchased_<Consumer EAN>_monthly
-    name: Sold To Network
+    name: Purchased from Network
+    color: rgb(251, 110, 108)
     show:
       datalabels: true
-    color: rgb(196, 201, 204)
+    
     
 
 ```
