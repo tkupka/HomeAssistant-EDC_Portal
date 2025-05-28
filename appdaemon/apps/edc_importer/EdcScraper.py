@@ -36,21 +36,10 @@ class EdcScraper:
         self.exportGroup = exportGroup
         self.downloadDirectory = downloadDirectory
         
-        self.printSystemInfo()
-        self.printInstalledModules()
-        self.getChromedriverVersion()
         os.makedirs(self.downloadDirectory, exist_ok=True)
         os.makedirs(self.downloadDirectory + "/debug", exist_ok=True)
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": EDC Initialized")
         
-    def printSystemInfo(self):
-        print("System Information:")
-        print(f"Platform: {platform.system()}")
-        print(f"Platform Release: {platform.release()}")
-        print(f"Platform Version: {platform.version()}")
-        print(f"Architecture: {platform.machine()}")
-        print(f"Processor: {platform.processor()}")
-        print(f"Python Version: {platform.python_version()}")
     
     def printInstalledModules(self):
         print("\nInstalled Python Modules:")
@@ -82,7 +71,7 @@ class EdcScraper:
             return Path(downloadedFile)
         except Exception as e:
             print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Unable to scrape data - exiting {e} {Colors.RESET}")
-            return None
+            raise Exception("Unable to scrape EDC data")
         finally:
             self.logout(driver)
             scrapeEndTime = dt.now()

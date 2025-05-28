@@ -1,13 +1,12 @@
 version = "1.0.0"
 
+
 import hassapi as hass
+import platform
 from datetime import datetime as dt
 from dateutil.relativedelta import relativedelta
-from datetime import timedelta
-from itertools import filterfalse
 from EdcScraper import EdcScraper
 import edc
-from pathlib import Path
 from EdcExporter import EdcExporter
 from Colors import Colors
 from typing import List, Dict, Any, Optional, Set, Literal, TypedDict
@@ -19,6 +18,7 @@ class EDCImporter(hass.Hass):
     
     edcScraper = 'undefined'
     edcExporter = 'undefined'
+    defaultGroupings = ["1h", "1d", "1m"]
     
     def initialize(self):
         self.log("Initializing...")
@@ -28,27 +28,41 @@ class EDCImporter(hass.Hass):
         
         self.listen_event(self.edcStart, "edc_start")
         self.listen_event(self.edcStartMonth, "edc_start_month")
-        self.run_daily(self.run_daily_callback, "08:00:00")
+        self.listen_event(self.printScraperInfo, "edc_scraper_info")
+        
+        self.run_daily(self.runDailCallback, "08:00:00")
         self.set_state("input_text.edc_version", state=version,attributes={
             "friendly_name": "EDC Version",
         })
 
+        self.printSystemInfo()
+        self.log("EDC Initialized")
         
-        self.log("Initialized")
+    def printSystemInfo(self):
+        print("System Information:")
+        print(f"Platform: {platform.system()}")
+        print(f"Platform Release: {platform.release()}")
+        print(f"Platform Version: {platform.version()}")
+        print(f"Architecture: {platform.machine()}")
+        print(f"Processor: {platform.processor()}")
+        print(f"Python Version: {platform.python_version()}")
         
-    def run_daily_callback(self, data, **kwargs):
+    def runDailCallback(self, data, **kwargs):
         year = dt.now().year
         month = dt.now().month
-        groupings = ["1h", "1d", "1m"]
-        self.executeEDC(month, year, groupings)
+        self.executeEDC(month, year, self.defaultGroupings)
+        
+    def printScraperInfo(self, data, **kwargs):
+        self.edcScraper.printInstalledModules()
+        self.edcScraper.getChromedriverVersion()
+
         
     def edcExecuteDefaultDataLoad(self):
         downloadIntervals= self.getLastMonths(dt.today(), 2)[::-1]
-        groupings = ["1h", "1d", "1m"]
         for downloadInterval in downloadIntervals:
             year = downloadInterval[0]
             month = downloadInterval[1]
-            self.executeEDC(month, year, groupings) 
+            self.executeEDC(month, year, self.defaultGroupings) 
     
     def edcStart(self, event_name, data, kwargs):
         self.edcExecuteDefaultDataLoad()
@@ -77,16 +91,14 @@ class EDCImporter(hass.Hass):
     def executeEDC(self, month, year, groupings: List[GroupingOptions]):
         edcStartTime = dt.now()
         groupingsNames =  "[%s]"%','.join(map(lambda grouping: self.edcExporter.convertGroupinToName(grouping), groupings))
-        scriptParameters = f"Time [{year}/{month}] :: Grouping [{groupingsNames}]"
+        scriptParameters = f"Interval [{year}/{month}] :: Grouping [{groupingsNames}]"
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Starting EDC data load [{year}/{month}::{groupingsNames}]  *********************{Colors.RESET}")
         try:
             self.set_state("binary_sensor.edc_running", state="on")
             
             self.set_state("input_text.edc_script_parameters", state=scriptParameters)
             dataFile = self.edcScraper.scrapeData(month, year)
-            if (dataFile is None):
-                return
-            
+
             csvDataFromFile = dataFile.read_text()
             if (len(csvDataFromFile) < 200):
                 #approx 2 lines
@@ -95,11 +107,9 @@ class EDCImporter(hass.Hass):
             parsedCsv = edc.parse_csv(csvDataFromFile, dataFile.name)
             for grouping in groupings:
                 self.edcExporter.exportData(parsedCsv, grouping)
-                
-            
+
             self.set_state("input_text.edc_script_status", state=f"OK")
-            
-            
+
         except Exception as e:
             self.set_state("input_text.edc_script_status", state=f"Failed")
             print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.RED}********************* Script failed : {str(e)} *********************{Colors.RESET}")
@@ -107,14 +117,12 @@ class EDCImporter(hass.Hass):
             edcEndTime = dt.now()
             edcDuration = edcEndTime - edcStartTime
             
-            self.set_state("input_text.edc_script_duration", state=f"{edcEndTime:%d/%m} :: {str(edcDuration).split('.')[0]}",
+            self.set_state("input_text.edc_script_duration", state=f"{str(edcDuration).split('.')[0]} :: {edcEndTime:%d/%m/%Y}",
                 attributes={
                     "script_parameters": scriptParameters
                 })
             self.set_state("binary_sensor.edc_running", state="off")
             print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Finished in {edcDuration} *********************{Colors.RESET}")
-
-
         
 
     def getLastMonths(self, start_date, months) -> List[tuple]:
