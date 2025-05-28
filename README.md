@@ -160,14 +160,14 @@ Z pohledu producenta lze zobrazit:
 ```
 type: custom:apexcharts-card
 stacked: false
-graph_span: 3d
+graph_span: 1w
 span:
   end: day
   offset: "-24h"
 header:
   title: EDC Producer Hourly
   show: true
-  show_states: true
+  show_states: false
   colorize_states: true
 apex_config:
   chart:
@@ -179,26 +179,36 @@ apex_config:
     toolbar:
       show: true
       autoSelected: zoom
-    xaxis.type: datetime
+  xaxis:
+    labels:
+      show: true
+    type: datetime
+    stepSizeX: 1
+    rangeX: 990000000
   legend:
-    show: false
-    dataLabels:
-      style:
-        fontSize: 9px
-      background:
-        enabled: true
-        padding: 2
-        borderRadius: 1
+    show: true
+  dataLabels:
+    style:
+      fontSize: 11px
+    offsetX: 5
+    offsetY: -8
+    background:
+      enabled: true
+      padding: 5
+      borderRadius: 1
+      opacity: 0.4
+    dropShadow:
+      enabled: true
 all_series_config:
   unit: kW
   show:
-    extremas: false
+    extremas: true
   stroke_width: 2
   curve: smooth
   type: area
   opacity: 0.4
   group_by:
-    func: sum
+    func: avg
     duration: 1h
   statistics:
     type: state
@@ -239,7 +249,7 @@ series:
 ```
 type: custom:apexcharts-card
 stacked: true
-graph_span: 2month
+graph_span: 1month
 span:
   end: hour
 header:
@@ -258,15 +268,18 @@ apex_config:
       show: true
       autoSelected: zoom
     xaxis.type: datetime
-  legend:
-    show: false
-    dataLabels:
-      style:
-        fontSize: 9px
-      background:
-        enabled: true
-        padding: 2
-        borderRadius: 1
+  dataLabels:
+    style:
+      fontSize: 11px
+    offsetX: 5
+    offsetY: -8
+    background:
+      enabled: true
+      padding: 5
+      borderRadius: 1
+      opacity: 0.4
+    dropShadow:
+      enabled: true
 all_series_config:
   unit: kW
   show:
@@ -276,7 +289,7 @@ all_series_config:
   type: column
   opacity: 0.4
   group_by:
-    func: sum
+    func: avg
     duration: 1d
   statistics:
     type: state
@@ -328,27 +341,31 @@ apex_config:
   dataLabels:
     style:
       fontSize: 11px
+    offsetX: 5
+    offsetY: -8
     background:
       enabled: true
       padding: 5
       borderRadius: 1
+      opacity: 0.4
+    dropShadow:
+      enabled: true
 all_series_config:
   stroke_width: 2
   curve: smooth
   type: column
   opacity: 0.4
   group_by:
-    func: last
+    func: avg
     duration: 1month
   show:
     extremas: false
   statistics:
     type: state
     period: month
-    align: end
+    align: middle
 experimental:
   color_threshold: false
-  
 series:
   - entity: input_number.edc_data_shared_<Consumer EAN>_monthly
     name: Shared
@@ -385,14 +402,14 @@ Z pohledu konzumenta lze zobrazit:
 ```
 type: custom:apexcharts-card
 stacked: false
-graph_span: 3d
+graph_span: 1w
 span:
   end: day
   offset: "-24h"
 header:
   title: EDC Consumer Hourly
   show: true
-  show_states: true
+  show_states: false
   colorize_states: true
 apex_config:
   chart:
@@ -406,7 +423,7 @@ apex_config:
       autoSelected: zoom
     xaxis.type: datetime
   legend:
-    show: false
+    show: true
     dataLabels:
       style:
         fontSize: 9px
@@ -417,13 +434,13 @@ apex_config:
 all_series_config:
   unit: kW
   show:
-    extremas: false
+    extremas: true
   stroke_width: 2
   curve: smooth
   type: area
   opacity: 0.4
   group_by:
-    func: sum
+    func: avg
     duration: 1h
   statistics:
     type: state
@@ -452,7 +469,7 @@ series:
 ```
 type: custom:apexcharts-card
 stacked: true
-graph_span: 25d
+graph_span: 1month
 span:
   end: hour
 show:
@@ -460,7 +477,7 @@ show:
 header:
   title: EDC Consumer Daily
   show: true
-  show_states: true
+  show_states: false
   colorize_states: true
 now:
   show: true
@@ -477,6 +494,18 @@ apex_config:
       show: true
       autoSelected: zoom
     xaxis.type: datetime
+  dataLabels:
+    style:
+      fontSize: 11px
+    offsetX: 5
+    offsetY: -8
+    background:
+      enabled: true
+      padding: 5
+      borderRadius: 1
+      opacity: 0.4
+    dropShadow:
+      enabled: true
 all_series_config:
   unit: kW
   show:
@@ -486,7 +515,7 @@ all_series_config:
   type: column
   opacity: 0.4
   group_by:
-    func: sum
+    func: avg
     duration: 1d
   statistics:
     type: state
@@ -528,7 +557,7 @@ span:
 header:
   title: EDC Consumer Monthly
   show: true
-  show_states: true
+  show_states: false
   colorize_states: true
 apex_config:
   chart:
@@ -541,31 +570,32 @@ apex_config:
       show: true
       autoSelected: zoom
     xaxis.type: datetime
-    dataLabels:
-      enabled: true
-    dropShadow:
-      enabled: true
   dataLabels:
     style:
       fontSize: 11px
+    offsetX: 5
+    offsetY: -8
     background:
       enabled: true
       padding: 5
       borderRadius: 1
+      opacity: 0.4
+    dropShadow:
+      enabled: true
 all_series_config:
   stroke_width: 2
   curve: smooth
   type: column
   opacity: 0.4
   group_by:
-    func: last
+    func: avg
     duration: 1month
   show:
     extremas: false
   statistics:
-      type: state
-      period: month
-      align: end
+    type: state
+    period: month
+    align: middle
 experimental:
   color_threshold: false
 series:

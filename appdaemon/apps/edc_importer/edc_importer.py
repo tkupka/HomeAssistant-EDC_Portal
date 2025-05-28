@@ -29,6 +29,10 @@ class EDCImporter(hass.Hass):
         self.listen_event(self.edcStart, "edc_start")
         self.listen_event(self.edcStartMonth, "edc_start_month")
         self.run_daily(self.run_daily_callback, "08:00:00")
+        self.set_state("input_text.edc_version", state=version,attributes={
+            "friendly_name": "EDC Version",
+        })
+
         
         self.log("Initialized")
         
@@ -58,29 +62,27 @@ class EDCImporter(hass.Hass):
             month = dt.now().month
             
         if 'grouping' in data:
-            grouping = data['grouping']
+            groupings = [data['grouping']]
         else:
-            grouping ="1m"
+            groupings = ["1h", "1d", "1m"]
         
         if 'year' in data:
             year = int(data['year'])
         else:
             year = dt.now().year
         
-        self.executeEDC(month, year, [grouping])
+        self.executeEDC(month, year, groupings)
         
         
     def executeEDC(self, month, year, groupings: List[GroupingOptions]):
-        self.set_state("input_text.edc_version", state=version,attributes={
-            "friendly_name": "EDC Version",
-        })
         edcStartTime = dt.now()
+        groupingsNames =  "[%s]"%','.join(map(lambda grouping: self.edcExporter.convertGroupinToName(grouping), groupings))
+        scriptParameters = f"Time [{year}/{month}] :: Grouping [{groupingsNames}]"
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Starting EDC data load [{year}/{month}::{groupingsNames}]  *********************{Colors.RESET}")
         try:
-            groupingsNames =  "[%s]"%','.join(map(lambda grouping: self.edcExporter.convertGroupinToName(grouping), groupings))
-            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Starting EDC data load [{year}/{month}::{groupingsNames}]  *********************{Colors.RESET}")
             self.set_state("binary_sensor.edc_running", state="on")
             
-            self.set_state("input_text.edc_script_parameters", state=f"Time [{year}/{month}] :: Grouping [{groupingsNames}]")
+            self.set_state("input_text.edc_script_parameters", state=scriptParameters)
             dataFile = self.edcScraper.scrapeData(month, year)
             if (dataFile is None):
                 return
@@ -105,7 +107,10 @@ class EDCImporter(hass.Hass):
             edcEndTime = dt.now()
             edcDuration = edcEndTime - edcStartTime
             
-            self.set_state("input_text.edc_script_duration", state=f"{str(edcDuration).split('.')[0]}")
+            self.set_state("input_text.edc_script_duration", state=f"{edcEndTime:%d/%m} :: {str(edcDuration).split('.')[0]}",
+                attributes={
+                    "script_parameters": scriptParameters
+                })
             self.set_state("binary_sensor.edc_running", state="off")
             print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Finished in {edcDuration} *********************{Colors.RESET}")
 

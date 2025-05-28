@@ -5787,7 +5787,7 @@ class TestStringMethods(unittest.TestCase):
         self.xyz(["15m", "1h"])
 #        print(f"XXX: ")
         directory = Path("../data/")
-        exporter = EdcExporter(directory)
+        exporter = EdcExporter(str(directory.resolve()))
         file = (directory / "automatic-export.csv")
         x = str(file.resolve())
         m = dt.now().month
@@ -5801,7 +5801,7 @@ class TestStringMethods(unittest.TestCase):
         for interval in parsedCsv._Csv__intervals:
             resolver = partial(self.resolveProducer) 
             self.functionRef(resolver, interval)
-            print(f"{interval.start} :: shared [{interval.sumSharing}] :: soldNetwork [{interval.sumProduction - interval.sumMissed - interval.sumSharing}]")
+            print(f"{interval.start} :: shared [{interval.sumSharing}] :: soldNetwork [{interval.sumProduction - interval.sumMissed - interval.sumSharing} :: missed [{interval.sumMissed}]")
             for distributionMeasurement in interval.distributions:
                 print()
                 
@@ -5818,7 +5818,7 @@ class TestStringMethods(unittest.TestCase):
             soldToNetworkEan = interval.distributions[0].after - interval.distributions[0].missed
             
             print(f"#{i}-Produced: {parsedCsv.distributionEans[0].name} :: {interval.start} :: {(interval.distributions[0].before - interval.distributions[0].after):.2f} / Consumed: {parsedCsv.consumerEans[0].name} :: {interval.start} :: {(interval.consumers[0].before - interval.consumers[0].after):.2f} :: Sold to network: [{soldToNetworkGroup}]")
-        exporter.exportData(parsedCsv, "1d")
+        exporter.exportData(parsedCsv, "1m")
         
         summary = parsedCsv.calculateSummary("1d")
         for stat in summary.consumerStats:

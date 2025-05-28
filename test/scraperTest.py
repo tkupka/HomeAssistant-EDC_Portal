@@ -14,7 +14,7 @@ class TestScraper(unittest.TestCase):
         configuration = json.loads(configFile.read_text())
        
         month = dt.now().month
-        #month = 4
+        month = 4
         year = 2025
         dataDirectory = str((Path.cwd() / "../data").resolve())
         scraper = EdcScraper("c:\\Java\\chromedriver-win64\\chromedriver.exe", configuration['user'], configuration['password'], configuration['group'], dataDirectory)

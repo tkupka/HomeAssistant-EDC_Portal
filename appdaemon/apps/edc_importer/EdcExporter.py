@@ -6,6 +6,7 @@ from datetime import datetime
 from functools import partial
 from datetime import datetime as dt
 import json
+import calendar
 class EdcExporter:
 
 	hass = 'undefined'
@@ -97,13 +98,24 @@ class EdcExporter:
 		exportFile.write(f"{self.exportHeader}\n")
 		
 		for interval in intervals:
-			dateObj = datetime.strptime(f"{interval.start}", "%Y-%m-%d %H:%M:%S")
-			convertedStart = dateObj.strftime('%d.%m.%Y %H:%M')
+			statisticDate: datetime = datetime.strptime(f"{interval.start}", "%Y-%m-%d %H:%M:%S")
 			data = dataResolver(interval)
 			value = calculator(data[i])
-			exportFile.write(f"input_number.{entityName};kWh;{convertedStart};{(value):.2f};0\n")
+
+			self.writeData(exportFile, entityName, statisticDate, value)
+			#in case on month statistic we need to set end date otherwise sometimes HA screw up last day of the month
+			if (grouping == "1m"):
+				lastDay = calendar.monthrange(statisticDate.year, statisticDate.month)[1]
+				statisticDate = statisticDate.replace(day = lastDay)
+				self.writeData(exportFile, entityName, statisticDate, value)
+			
 		exportFile.close()
 		return fileName
+	
+	def writeData(self, exportFile, entityName, statisticDate, value):
+		statisticDateStr = statisticDate.strftime('%d.%m.%Y %H:%M')
+		exportFile.write(f"input_number.{entityName};kWh;{statisticDateStr};{(value):.2f};0\n")
+		
 	
 	def uploadFile(self, file: Path):
 		if (self.hass != 'undefined'):
