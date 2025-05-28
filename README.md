@@ -294,7 +294,7 @@ all_series_config:
   statistics:
     type: state
     period: day
-    align: middle
+    align: end
 experimental:
   color_threshold: false
   brush: false
@@ -520,7 +520,7 @@ all_series_config:
   statistics:
     type: state
     period: day
-    align: middle
+    align: end
 experimental:
   color_threshold: false
   brush: false
