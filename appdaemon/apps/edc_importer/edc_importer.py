@@ -47,7 +47,9 @@ class EDCImporter(hass.Hass):
         print(f"Processor: {platform.processor()}")
         print(f"Python Version: {platform.python_version()}")
         
-    def runDailCallback(self, data, **kwargs):
+        
+    def runDailCallback(self, **kwargs):
+        ##Works only with latest AppDaemon
         year = dt.now().year
         month = dt.now().month
         self.executeEDC(month, year, self.defaultGroupings)
