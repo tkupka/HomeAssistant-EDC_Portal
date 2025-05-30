@@ -30,7 +30,7 @@ class EDCImporter(hass.Hass):
         self.listen_event(self.edcStartMonth, "edc_start_month")
         self.listen_event(self.printScraperInfo, "edc_scraper_info")
         
-        self.run_daily(self.runDailCallback, "08:00:00")
+        self.run_daily(self.runDailCallback, "08:30:00")
         self.set_state("input_text.edc_version", state=version,attributes={
             "friendly_name": "EDC Version",
         })
