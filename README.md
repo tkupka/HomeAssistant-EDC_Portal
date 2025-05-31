@@ -25,7 +25,7 @@ Systém má statické entity:
 * **edc_script_status** - Parametry skriptu
 * **edc_producer_eans** -Seznam EANu produkujících elektřinu
 * **edc_consumer_eans** - Seznam EANu konzumujících  
-* **running** - Binární senzor při pěhu skriptu = `on`
+* **edc_running** - Binární senzor při pěhu skriptu = `on`
 
 Systém má dynamické entity pro jednotlivé intervaly. Jméno intervalu je použito jako `suffix` jme entity.
 * **fluent** - 15 minut
