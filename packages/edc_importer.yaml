@@ -1,29 +1,4 @@
 template:
-  - sensor:
-      - name: "EDC Script Duration"
-        unique_id: edc_script_duration
-        icon: mdi:timelapse
-        state: "{{ 'unknown' }}"
-      - name: "EDC Script Status"
-        unique_id: edc_script_status
-        icon: mdi:list-status
-        state: "{{ 'unknown' }}"
-      - name: "EDC Script Parameters"
-        unique_id: edc_script_parameters
-        icon: mdi:code-brackets
-        state: "{{ 'unknown' }}"
-      - name: "EDC Producer EANs"
-        unique_id: edc_producer_eans
-        icon: mdi:list-status
-        state: "{{ '[]' }}"		
-      - name: "EDC Consumer EANs"
-        unique_id: edc_consumer_eans
-        icon: mdi:list-status
-        state: "{{ '[]' }}"
-      - name: "EDC Version"
-        unique_id: edc_version
-        icon: mdi:check-decagram
-        state: "{{ 'unknown' }}"
   - binary_sensor:
       - name: "EDC Running"
         unique_id: edc_running
