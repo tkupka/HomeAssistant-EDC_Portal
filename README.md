@@ -166,7 +166,8 @@ Pro stažení dat pro libovolný měsíc je k dispozici event `edc_start_month`.
 
 ![EDC start Event](/images/event_edc_start_month.png )
 
-
+> [!WARNING]
+> Po restartu HA se může stát, že enetity zmizí jelikož se neupdatují. Pak stačí jen spustit znova stahování dat pro jakýkoliv měsíc a veškerá data se zase vrátí. (Statistiky se v tomto případě nemažou)
 
 
 
