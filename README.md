@@ -34,7 +34,7 @@ Systém má dynamické entity pro jednotlivé intervaly. Jméno intervalu je pou
 * **monthly** - Měsíc
 
 Dynamické entity:
-* **edc_data_shared_<consumer EAN>_<interval>** - Sdílená elektřina odběrovým EAN-em
+* **edc_data_shared_\<consumer EAN\>_\<interval\>** - Sdílená elektřina odběrovým EAN-em
 * **edc_data_producer_missed_<producer EAN>_<interval>** - Elektřina prodána producentem do sítě, která ovšem mohla být sdílená. (Spotřebitelé měli dostatečný odběr ovšem pravděpodobně z důvodu nastaveni nebyla sdílená)
 * **edc_data_producer_sold_network__<producer EAN>_<interval>** - Elektřina prodána producentem do sítě pro kterou nebyl odběr o konzumentů.
 * **edc_data_consumer_missed_<consumer EAN>_<interval>** - Elektřina u odběratele, která mohla být sdílena. tedy existovala  dostatečná kapacita u výrobce.
