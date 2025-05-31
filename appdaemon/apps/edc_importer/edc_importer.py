@@ -5,6 +5,7 @@ import hassapi as hass
 import platform
 from datetime import datetime as dt
 from dateutil.relativedelta import relativedelta
+import time
 from EdcScraper import EdcScraper
 import edc
 from EdcExporter import EdcExporter
@@ -30,7 +31,7 @@ class EDCImporter(hass.Hass):
         self.listen_event(self.edcStartMonth, "edc_start_month")
         self.listen_event(self.printScraperInfo, "edc_scraper_info")
         
-        self.run_daily(self.runDailCallback, "08:30:00")
+        self.run_daily(self.runDailCallback, "09:15:00")
         self.set_state("input_text.edc_version", state=version,attributes={
             "friendly_name": "EDC Version",
         })
@@ -52,7 +53,12 @@ class EDCImporter(hass.Hass):
         ##Works only with latest AppDaemon
         year = dt.now().year
         month = dt.now().month
-        self.executeEDC(month, year, self.defaultGroupings)
+        try:
+            self.executeEDC(month, year, self.defaultGroupings)
+        except Exception as e:
+            time.sleep(30)
+            # call it again in case of failure
+            self.executeEDC(month, year, self.defaultGroupings)
         
     def printScraperInfo(self, data, **kwargs):
         self.edcScraper.printInstalledModules()
@@ -115,6 +121,7 @@ class EDCImporter(hass.Hass):
         except Exception as e:
             self.set_state("input_text.edc_script_status", state=f"Failed")
             print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.RED}********************* Script failed : {str(e)} *********************{Colors.RESET}")
+            raise Exception("Unable to scrape EDC data")
         finally:
             edcEndTime = dt.now()
             edcDuration = edcEndTime - edcStartTime

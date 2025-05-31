@@ -623,3 +623,27 @@ series:
     
 
 ```
+
+## Spuštění
+
+Aplikace reaguje na `eventy` kterými se stahují data. Pokud si chcete stáhnout data tak jsou k dispozici následující možnosti.
+
+### Stažení aktuálních dat 
+Pro stažení aktuálních date b HA pošlete event `edc_start` bez parametrů. Stáhne se aktuální a předcjhozí měsíc.
+
+![EDC start Event](/images/event_edc_start.png )
+
+### Stažení dat 
+Pro stažení dat pro libovolný měsíc je k dispozici event `edc_start_month`. Tato ud8lost akceptuje následující parametry:
+* month
+* year
+
+> [!TIP]
+> Pokud parametry neuvedete berou se dle aktuálního data
+
+![EDC start Event](/images/event_edc_start_month.png )
+
+
+
+> [!TIP]
+> Data pro aktuální měsíc se stahují každý den v `9:15`.
