@@ -1,12 +1,11 @@
-import hassapi as hass
 from edc import Csv, Interval, GroupingOptions, Ean, Measurement
-from typing import List, Dict, Any, Optional, Set, Literal, TypedDict, AnyStr
+from typing import List, AnyStr
 from pathlib import Path
 from datetime import datetime
 from functools import partial
-from datetime import datetime as dt
 import json
 import calendar
+
 class EdcExporter:
 
 	hass = 'undefined'
@@ -21,7 +20,8 @@ class EdcExporter:
 		print(f"Exporting data {grouping}")
 		intervals = parsedData.getGroupedIntervals(grouping)
 		
-		self.exportSharedEnergy(parsedData, intervals, grouping)
+		self.exportProducerSharedEnergy(parsedData, intervals, grouping)
+		self.exportConsumerSharedEnergy(parsedData, intervals, grouping)
 		self.exportProducerMissed(parsedData, intervals, grouping)
 		self.exportProducerSoldToNetwork(parsedData, intervals, grouping)
 		self.exportConsumerMissed(parsedData, intervals, grouping)
@@ -30,12 +30,20 @@ class EdcExporter:
 		self.exportConsumerEans(parsedData)
 		
 		
-	def exportSharedEnergy(self, parsedData: Csv, intervals: List[Interval], grouping: GroupingOptions):
+	def exportProducerSharedEnergy(self, parsedData: Csv, intervals: List[Interval], grouping: GroupingOptions):
 		#create entities
-		print(f"Exporting Shared energy for producer between EANS.")
+		print(f"Exporting Shared energy for producer between EAN(s).")
 		#it might be consumer resolver....
 		dataResolver = partial(self.resolveProducer)
 		#dataResolver = partial(self.resolveConsumer)
+		calculator = partial(self.calculateBeforeAfterDifference)
+		self.exportConsumptionForEans(intervals, parsedData.distributionEans, "shared", grouping, dataResolver, calculator)
+
+	def exportConsumerSharedEnergy(self, parsedData: Csv, intervals: List[Interval], grouping: GroupingOptions):
+		#create entities
+		print(f"Exporting Shared energy for producer between EANS.")
+		#it might be consumer resolver....
+		dataResolver = partial(self.resolveConsumer)
 		calculator = partial(self.calculateBeforeAfterDifference)
 		self.exportConsumptionForEans(intervals, parsedData.consumerEans, "shared", grouping, dataResolver, calculator)
 		

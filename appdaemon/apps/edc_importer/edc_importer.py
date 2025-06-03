@@ -1,5 +1,4 @@
-version = "1.0.0"
-
+version = "1.1.0"
 
 import hassapi as hass
 import platform
@@ -10,7 +9,7 @@ from EdcScraper import EdcScraper
 import edc
 from EdcExporter import EdcExporter
 from Colors import Colors
-from typing import List, Dict, Any, Optional, Set, Literal, TypedDict
+from typing import List
 from edc import GroupingOptions
 
 
@@ -27,13 +26,14 @@ class EDCImporter(hass.Hass):
         self.edcScraper = EdcScraper("/usr/bin/chromedriver", self.args["username"], self.args["password"], self.args["exportGroup"], self.args["dataDirectory"])
         self.edcExporter = EdcExporter(self.args["dataDirectory"], self)
         
-        self.listen_event(self.edcStart, "edc_start")
-        self.listen_event(self.edcStartMonth, "edc_start_month")
+        self.listen_event(self.importEdcDataEventHandler, "edc_import")
+        self.listen_event(self.importEdcDailyDataEventHandler, "edc_import_daily")
+        self.listen_event(self.importEdcMonthltdataEventHandler, "edc_import_month")
         self.listen_event(self.printScraperInfo, "edc_scraper_info")
         
-        self.run_daily(self.runDailCallback, "09:15:00")
+        self.run_daily(self.runDailCallback, "10:15:00")
         self.set_state("input_text.edc_version", state=version,attributes={
-            "friendly_name": "EDC Version",
+            "name": "EDC Version",
         })
 
         self.printSystemInfo()
@@ -48,34 +48,55 @@ class EDCImporter(hass.Hass):
         print(f"Processor: {platform.processor()}")
         print(f"Python Version: {platform.python_version()}")
         
+    def importEdcDailyDataEventHandler(self, event_name, data, kwargs):
+        self.executeEdcImportDailyData()
         
     def runDailCallback(self, **kwargs):
+        self.executeEdcImportDailyData()
+        
+    def executeEdcImportDailyData(self):
         ##Works only with latest AppDaemon
         year = dt.now().year
         month = dt.now().month
+        day = dt.now().day
+        if (day == 1):
+            ## still last month required
+            month = month - 1
+            
         try:
-            self.executeEDC(month, year, self.defaultGroupings)
-        except Exception as e:
+            self.executeEdcImport(month, year, self.defaultGroupings)
+        except Exception:
             time.sleep(30)
             # call it again in case of failure
-            self.executeEDC(month, year, self.defaultGroupings)
+            self.executeEdcImport(month, year, self.defaultGroupings)
+        if (day >=6 and day <=8):
+            #download whole previous month.
+            month = month - 1
+            if (month <= 0):
+                month = 12
+                year = year - 1
+            try:
+                self.executeEdcImport(month, year, self.defaultGroupings)
+            except Exception:
+                time.sleep(30)
+                self.executeEdcImport(month, year, self.defaultGroupings)
         
     def printScraperInfo(self, data, **kwargs):
         self.edcScraper.printInstalledModules()
         self.edcScraper.getChromedriverVersion()
 
         
-    def edcExecuteDefaultDataLoad(self):
+    def importEdcDataForDefaultInterval(self):
         downloadIntervals= self.getLastMonths(dt.today(), 2)[::-1]
         for downloadInterval in downloadIntervals:
             year = downloadInterval[0]
             month = downloadInterval[1]
-            self.executeEDC(month, year, self.defaultGroupings) 
+            self.executeEdcImport(month, year, self.defaultGroupings) 
     
-    def edcStart(self, event_name, data, kwargs):
-        self.edcExecuteDefaultDataLoad()
+    def importEdcDataEventHandler(self, event_name, data, kwargs):
+        self.importEdcDataForDefaultInterval()
     
-    def edcStartMonth(self, event_name, data, kwargs):
+    def importEdcMonthltdataEventHandler(self, event_name, data, kwargs):
        
 
         if 'month' in data:
@@ -93,10 +114,10 @@ class EDCImporter(hass.Hass):
         else:
             year = dt.now().year
         
-        self.executeEDC(month, year, groupings)
+        self.executeEdcImport(month, year, groupings)
         
         
-    def executeEDC(self, month, year, groupings: List[GroupingOptions]):
+    def executeEdcImport(self, month, year, groupings: List[GroupingOptions]):
         edcStartTime = dt.now()
         groupingsNames =  "[%s]"%','.join(map(lambda grouping: self.edcExporter.convertGroupinToName(grouping), groupings))
         scriptParameters = f"Interval [{year}/{month}] :: Grouping [{groupingsNames}]"

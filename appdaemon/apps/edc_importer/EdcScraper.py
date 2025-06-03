@@ -113,7 +113,7 @@ class EdcScraper:
         time.sleep(2)  # Allow time for the page to load
         
     def login(self, driver):
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Loding login page")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Loading login page")
         try:
             loginLink = driver.find_element(By.XPATH, "//div[contains(@class, 'MuiBox-root')]//button[contains(text(), 'Přihlášení')]")
             loginLink.click()

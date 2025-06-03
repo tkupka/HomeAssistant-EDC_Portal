@@ -130,7 +130,7 @@ Nejdrříve si v souboru `config/secrets.yaml` přidejte konfiguraci:
 ```
 edc_username: ***
 edc_password: ***
-edc_exportGroup: ***
+edc_import_group: ***
 
 ```
 
@@ -149,15 +149,15 @@ Poté zkontrolujte zdali se v **HA** vytvořily statické entity.
 Aplikace reaguje na `eventy` kterými se stahují data. Pokud si chcete stáhnout data tak jsou k dispozici následující možnosti.
 
 > [!TIP]
-> Data pro aktuální měsíc se stahují každý den v `9:15`.
+> Data pro aktuální měsíc a předchozí den se stahují každý den v `10:15`.
 
 ### Stažení aktuálních dat 
-Pro stažení aktuálních date b HA pošlete event `edc_start` bez parametrů. Stáhne se aktuální a předcjhozí měsíc.
+Pro stažení aktuálních date b HA pošlete event `edc_import_daily` bez parametrů. Stáhne se aktuální a předcjhozí měsíc.
 
 ![EDC start Event](/images/event_edc_start.png )
 
 ### Stažení dat 
-Pro stažení dat pro libovolný měsíc je k dispozici event `edc_start_month`. Tato ud8lost akceptuje následující parametry:
+Pro stažení dat pro libovolný měsíc je k dispozici event `edc_import_month`. Tato událost akceptuje následující parametry:
 * month
 * year
 
@@ -651,3 +651,37 @@ series:
 
 ```
 
+> [!TIP]
+> Pokud máte  nainstalované [Mushroom cards](https://github.com/piitaya/lovelace-mushroom) tak si můžete uělat malý toolbar kde jde vidět stav aplikace.
+
+![State Toolbar](/images/state_toolbar.png )
+
+```
+type: custom:mushroom-chips-card
+chips:
+  - type: action
+    tap_action:
+      action: perform-action
+      perform_action: script.edc_load_current_month
+      target: {}
+    icon: mdi:calendar-start-outline
+  - type: entity
+    entity: binary_sensor.edc_running
+    content_info: name
+    icon_color: accent
+    use_entity_picture: false
+  - type: entity
+    entity: input_text.edc_script_parameters
+  - type: entity
+    entity: input_text.edc_script_status
+    content_info: state
+    use_entity_picture: false
+    icon_color: accent
+  - type: entity
+    entity: input_text.edc_script_duration
+  - type: spacer
+  - type: entity
+    entity: input_text.edc_version
+alignment: center
+
+```

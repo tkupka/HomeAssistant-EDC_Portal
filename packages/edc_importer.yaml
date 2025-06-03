@@ -5,31 +5,38 @@ template:
         state: "off"
 input_text:
   edc_script_duration:
-    name: edc_script_duration
+    name: EDC Script Duration
     icon: mdi:timelapse
   edc_script_status:
-    name: edc_script_status
+    name: EDC Script Status
     icon: mdi:list-status
   edc_script_parameters:
-    name: edc_script_parameters
+    name: EDC Script Parameters
     icon: mdi:code-brackets
   edc_version:
-    name: edc_version
+    name: EDC Version
     icon: mdi:check-decagram
   edc_producer_eans:
-    name: edc_producer_eans
+    name: EDC Producer EANs
     icon: mdi:list-status
   edc_consumer_eans:
-    name: edc_consumer_eans
+    name: EDC Consumer EANs
     icon: mdi:list-status
 
 
 script:
-  # script to load data
+  # script to load default data
   edc_load_default_interval:
     alias: EDC Load last month and currnt one
     sequence:
-      - event: edc_start
+      - event: edc_import
+        event_data: {}
+    mode: single
+    icon: "mdi:calendar-start-outline"
+  edc_load_current_month:
+    alias: EDC Load current month
+    sequence:
+      - event: edc_import_month
         event_data: {}
     mode: single
     icon: "mdi:calendar-start-outline"

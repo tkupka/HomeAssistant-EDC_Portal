@@ -4,5 +4,5 @@ edc_importer_app:
   class: EDCImporter
   username: !secret edc_username
   password: !secret edc_password
-  exportGroup: !secret edc_exportGroup
+  exportGroup: !secret edc_import_group
   dataDirectory: "/homeassistant/appdaemon/apps/edc_importer/data"
