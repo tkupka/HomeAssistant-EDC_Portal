@@ -662,7 +662,7 @@ chips:
   - type: action
     tap_action:
       action: perform-action
-      perform_action: script.edc_load_current_month
+      perform_action: script.edc_import_current_month
       target: {}
     icon: mdi:calendar-start-outline
   - type: entity

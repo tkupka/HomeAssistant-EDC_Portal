@@ -26,14 +26,14 @@ input_text:
 
 script:
   # script to load default data
-  edc_load_default_interval:
+  edc_import_default_interval:
     alias: EDC Load last month and currnt one
     sequence:
       - event: edc_import
         event_data: {}
     mode: single
     icon: "mdi:calendar-start-outline"
-  edc_load_current_month:
+  edc_import_current_month:
     alias: EDC Load current month
     sequence:
       - event: edc_import_month
