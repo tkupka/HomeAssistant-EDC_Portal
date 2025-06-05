@@ -140,6 +140,8 @@ edc_import_group: ***
 > [!TIP]
 > Do `edc_import_group` zadejte skupinu z EDC kterou chcete exportovat
 
+Stáhnete si poslední [Release](https://github.com/tkupka/HomeAssistant-EDC_Portal/releases)
+
 Následně zkopírujte následující adresáře do adresáře `config` na **HA**:
 * **appdaemon**
 * **packages**
