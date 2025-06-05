@@ -1,0 +1,32 @@
+---
+logs:
+  access_log:
+    filename: /homeassistant/appdaemon/logs/access.log
+  error_log:
+    filename: /homeassistant/appdaemon/logs/error.log
+  main_log:
+    filename: /homeassistant/appdaemon/logs/appdaemon.log
+  diag_log:
+    filename: /homeassistant/appdaemon/logs/diag.log
+  pnd:
+    filename: /homeassistant/appdaemon/logs/pnd.log
+    name: pnd
+secrets: /homeassistant/secrets.yaml
+appdaemon:
+  latitude: 52.375189
+  longitude: 4.898431
+  elevation: 2
+  time_zone: Europe/Amsterdam
+  app_dir: /homeassistant/appdaemon/apps
+  plugins:
+    HASS:
+      type: hass
+      ha_url: https://<HA_IP>:8123
+      token: <long lived token>
+      cert_verify: false
+http:
+  url: http://0.0.0.0:5050
+  transport: socketio
+admin:
+api:
+hadashboard:

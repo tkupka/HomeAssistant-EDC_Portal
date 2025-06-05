@@ -101,7 +101,7 @@ appdaemon:
   plugins:
     HASS:
       type: hass
-      ha_url: https://<HA_IP>>:8123
+      ha_url: https://<HA_IP>:8123
       token: <long lived token>
 
       cert_verify: false
