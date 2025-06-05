@@ -712,4 +712,4 @@ dataDirectory: "/homeassistant/appdaemon/apps/edc_importer/data"
 
 
 ### Entity
-V prípadě, že stahování datr skončí chybou tak chybu najdete v příslušném atributu `error` u entity `input_text.edc_script_status` 
+V prípadě, že stahování dat skončí chybou tak chybu najdete v atributu `error` u entity `input_text.edc_script_status` 
