@@ -137,6 +137,9 @@ edc_import_group: ***
 
 ```
 
+> [!TIP]
+> Do `edc_import_group` zadejte skupinu z EDC kterou chcete exportovat
+
 Následně zkopírujte následující adresáře do adresáře `config` na **HA**:
 * **appdaemon**
 * **packages**
