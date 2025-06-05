@@ -118,6 +118,7 @@ class EdcScraper:
             loginLink = driver.find_element(By.XPATH, "//div[contains(@class, 'MuiBox-root')]//button[contains(text(), 'Přihlášení')]")
             loginLink.click()
             time.sleep(3)  # Allow time for the page to load
+            self.createScreenshot(driver, "pre_login")
                        
             username_field = driver.find_element(By.XPATH, "//input[@id='email']")
             password_field = driver.find_element(By.XPATH, "//input[@id='password']")

@@ -46,6 +46,9 @@ Dynamické entity:
 
 ## Požadavky
 * AppDaemon addon https://github.com/hassio-addons/addon-appdaemon
+> [!IMPORTANT]
+> Minimální verze Appdaeomon Addonu je **0.17.3**
+
 * Integrace `homeassistant-statistics` - https://github.com/klausj1/homeassistant-statistics
 Registraci na EDC potrálu https://www.edc-cr.cz
 
@@ -685,3 +688,28 @@ chips:
 alignment: center
 
 ```
+
+
+## Řešení peoblémů
+
+### Aplikační Log
+
+V `Settings -> Addon -> AppDaeomn` v záložce **Log** uvidíte detailní log aplikace:
+
+![Appdaemon Log](/images/appdaemon_log.png )
+
+
+### Stahování dat
+
+
+V datovém adresáři aplikace se nachází podadresář debug kde je možné vidět screenshoty z prohlížeče pro jednotlivé kroky
+
+```
+dataDirectory: "/homeassistant/appdaemon/apps/edc_importer/data"
+```
+
+![Export Form](/images/export_data.png )
+
+
+### Entity
+V prípadě, že stahování datr skončí chybou tak chybu najdete v příslušném atributu `error` u entity `input_text.edc_script_status` 

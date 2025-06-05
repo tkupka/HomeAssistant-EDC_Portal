@@ -28,7 +28,7 @@ class EDCImporter(hass.Hass):
         
         self.listen_event(self.importEdcDataEventHandler, "edc_import")
         self.listen_event(self.importEdcDailyDataEventHandler, "edc_import_daily")
-        self.listen_event(self.importEdcMonthltdataEventHandler, "edc_import_month")
+        self.listen_event(self.importEdcMonthlyDataEventHandler, "edc_import_month")
         self.listen_event(self.printScraperInfo, "edc_scraper_info")
         
         self.run_daily(self.runDailCallback, "10:15:00")
@@ -96,7 +96,7 @@ class EDCImporter(hass.Hass):
     def importEdcDataEventHandler(self, event_name, data, kwargs):
         self.importEdcDataForDefaultInterval()
     
-    def importEdcMonthltdataEventHandler(self, event_name, data, kwargs):
+    def importEdcMonthlyDataEventHandler(self, event_name, data, kwargs):
        
 
         if 'month' in data:
@@ -122,6 +122,7 @@ class EDCImporter(hass.Hass):
         groupingsNames =  "[%s]"%','.join(map(lambda grouping: self.edcExporter.convertGroupinToName(grouping), groupings))
         scriptParameters = f"Interval [{year}/{month}] :: Grouping [{groupingsNames}]"
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Starting EDC data load [{year}/{month}::{groupingsNames}]  *********************{Colors.RESET}")
+        importError = ""
         try:
             self.set_state("binary_sensor.edc_running", state="on")
             
@@ -140,8 +141,13 @@ class EDCImporter(hass.Hass):
             self.set_state("input_text.edc_script_status", state=f"OK")
 
         except Exception as e:
-            self.set_state("input_text.edc_script_status", state=f"Failed")
-            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.RED}********************* Script failed : {str(e)} *********************{Colors.RESET}")
+            importError = str(e)
+            self.set_state("input_text.edc_script_status", state=f"Failed",
+                attributes={
+                    "error": importError
+                })
+            
+            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.RED}********************* Script failed : {importError} *********************{Colors.RESET}")
             raise Exception("Unable to scrape EDC data")
         finally:
             edcEndTime = dt.now()
@@ -149,7 +155,8 @@ class EDCImporter(hass.Hass):
             
             self.set_state("input_text.edc_script_duration", state=f"{str(edcDuration).split('.')[0]} :: {edcEndTime:%d/%m/%Y}",
                 attributes={
-                    "script_parameters": scriptParameters
+                    "script_parameters": scriptParameters,
+                    "error": importError
                 })
             self.set_state("binary_sensor.edc_running", state="off")
             print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Finished in {edcDuration} *********************{Colors.RESET}")
