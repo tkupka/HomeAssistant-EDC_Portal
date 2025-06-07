@@ -727,4 +727,4 @@ Tototo provedete událostí `edc_print_services` a v logu AppDaemon by hste měl
 ```
 {'namespace': 'default', 'domain': 'import_statistics', 'service': 'import_from_file'}
 ```
-Pak je AppDaemon schoen zavolat import dat do HA
+Pak je AppDaemon schopen zavolat import dat do HA
