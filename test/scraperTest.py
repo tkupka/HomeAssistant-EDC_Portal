@@ -3,6 +3,7 @@ from EdcScraper import EdcScraper
 from datetime import datetime as dt
 from pathlib import Path
 import json
+from EdcLogger import EdcLogger
 
 
 class TestScraper(unittest.TestCase):
@@ -17,7 +18,8 @@ class TestScraper(unittest.TestCase):
 #        month = 1
         year = 2025
         dataDirectory = str((Path.cwd() / "../data").resolve())
-        scraper = EdcScraper(configuration['chromeDriverPath'], configuration['user'], configuration['password'], configuration['group'], dataDirectory)
+        logger = EdcLogger()
+        scraper = EdcScraper(configuration['chromeDriverPath'], configuration['user'], configuration['password'], configuration['group'], dataDirectory, logger)
         result = scraper.scrapeData(month, year)
         print(f"Report file: {result}")
 

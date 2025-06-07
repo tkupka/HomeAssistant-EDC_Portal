@@ -1,4 +1,5 @@
-version = "1.1.0"
+from EdcLogger import EdcLogger
+version = "1.2.0"
 
 import hassapi as hass
 import platform
@@ -19,17 +20,21 @@ class EDCImporter(hass.Hass):
     edcScraper = 'undefined'
     edcExporter = 'undefined'
     defaultGroupings = ["1h", "1d", "1m"]
+    uiLogger: EdcLogger = 'undefined'
     
     def initialize(self):
         self.log("Initializing...")
-        
-        self.edcScraper = EdcScraper("/usr/bin/chromedriver", self.args["username"], self.args["password"], self.args["exportGroup"], self.args["dataDirectory"])
-        self.edcExporter = EdcExporter(self.args["dataDirectory"], self)
+        logger = EdcLogger(self)
+        self.uiLogger = logger
+
+        self.edcScraper = EdcScraper("/usr/bin/chromedriver", self.args["username"], self.args["password"], self.args["exportGroup"], self.args["dataDirectory"], logger)
+        self.edcExporter = EdcExporter(self.args["dataDirectory"], logger, self)
         
         self.listen_event(self.importEdcDataEventHandler, "edc_import")
         self.listen_event(self.importEdcDailyDataEventHandler, "edc_import_daily")
         self.listen_event(self.importEdcMonthlyDataEventHandler, "edc_import_month")
         self.listen_event(self.printScraperInfo, "edc_scraper_info")
+        self.listen_event(self.printServicesEventHandler, "edc_print_services")
         
         self.run_daily(self.runDailCallback, "10:15:00")
         self.set_state("input_text.edc_version", state=version,attributes={
@@ -40,13 +45,18 @@ class EDCImporter(hass.Hass):
         self.log("EDC Initialized")
         
     def printSystemInfo(self):
-        print("System Information:")
-        print(f"Platform: {platform.system()}")
-        print(f"Platform Release: {platform.release()}")
-        print(f"Platform Version: {platform.version()}")
-        print(f"Architecture: {platform.machine()}")
-        print(f"Processor: {platform.processor()}")
-        print(f"Python Version: {platform.python_version()}")
+        self.uiLogger.print("System Information:")
+        self.uiLogger.print(f"Platform: {platform.system()}")
+        self.uiLogger.print(f"Platform Release: {platform.release()}")
+        self.uiLogger.print(f"Platform Version: {platform.version()}")
+        self.uiLogger.print(f"Architecture: {platform.machine()}")
+        self.uiLogger.print(f"Processor: {platform.processor()}")
+        self.uiLogger.print(f"Python Version: {platform.python_version()}")
+
+    def printServicesEventHandler(self, event_name, data, kwargs):
+        availableServices = self.list_services(namespace="global")
+        self.uiLogger.print("HA services:")
+        self.uiLogger.print('\n'.join(list(map(lambda service: str(service), availableServices))))        
         
     def importEdcDailyDataEventHandler(self, event_name, data, kwargs):
         self.executeEdcImportDailyData()
@@ -70,7 +80,7 @@ class EDCImporter(hass.Hass):
             # call it again in case of failure
             self.executeEdcImport(month, year, self.defaultGroupings)
         if (day >=6 and day <=8):
-            #download whole previous month.
+            #download whole previous month. God knows when it's ready in EDC
             month = month - 1
             if (month <= 0):
                 month = 12
@@ -97,7 +107,6 @@ class EDCImporter(hass.Hass):
         self.importEdcDataForDefaultInterval()
     
     def importEdcMonthlyDataEventHandler(self, event_name, data, kwargs):
-       
 
         if 'month' in data:
             month = int(data['month'])
@@ -121,7 +130,7 @@ class EDCImporter(hass.Hass):
         edcStartTime = dt.now()
         groupingsNames =  "[%s]"%','.join(map(lambda grouping: self.edcExporter.convertGroupinToName(grouping), groupings))
         scriptParameters = f"Interval [{year}/{month}] :: Grouping [{groupingsNames}]"
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Starting EDC data load [{year}/{month}::{groupingsNames}]  *********************{Colors.RESET}")
+        self.uiLogger.logAndPrint(f"******************** Starting EDC data load [{year}/{month}::{groupingsNames}]  *********************", Colors.CYAN)
         importError = ""
         try:
             self.set_state("binary_sensor.edc_running", state="on")
@@ -130,8 +139,10 @@ class EDCImporter(hass.Hass):
             dataFile = self.edcScraper.scrapeData(month, year)
 
             csvDataFromFile = dataFile.read_text()
-            if (len(csvDataFromFile) < 200):
+            fileLenght = len(csvDataFromFile)
+            if (fileLenght < 200):
                 #approx 2 lines
+                self.uiLogger.logAndPrint(f"EDC export contains no data len[{fileLenght}]. Ignoring....")
                 return
             
             parsedCsv = edc.parse_csv(csvDataFromFile, dataFile.name)
@@ -147,7 +158,7 @@ class EDCImporter(hass.Hass):
                     "error": importError
                 })
             
-            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.RED}********************* Script failed : {importError} *********************{Colors.RESET}")
+            self.uiLogger.logAndPrint(f"******************** Script failed : {importError} *********************", Colors.RED)
             raise Exception("Unable to scrape EDC data")
         finally:
             edcEndTime = dt.now()
@@ -159,7 +170,7 @@ class EDCImporter(hass.Hass):
                     "error": importError
                 })
             self.set_state("binary_sensor.edc_running", state="off")
-            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Finished in {edcDuration} *********************{Colors.RESET}")
+            self.uiLogger.logAndPrint(f"********************* Finished in {edcDuration} *********************", Colors.CYAN)
         
 
     def getLastMonths(self, start_date, months) -> List[tuple]:

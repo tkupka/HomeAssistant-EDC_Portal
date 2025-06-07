@@ -8,6 +8,7 @@ from functools import partial
 import time
 from dateutil.relativedelta import relativedelta
 from typing import List, Dict, Any, Optional, Set, Literal, TypedDict
+from EdcLogger import EdcLogger
 
 
 
@@ -5787,7 +5788,8 @@ class TestStringMethods(unittest.TestCase):
         self.xyz(["15m", "1h"])
 #        print(f"XXX: ")
         directory = Path("../data/")
-        exporter = EdcExporter(str(directory.resolve()))
+        logger = EdcLogger()
+        exporter = EdcExporter(str(directory.resolve()), logger)
         file = (directory / "automatic-export.csv")
         x = str(file.resolve())
         m = dt.now().month

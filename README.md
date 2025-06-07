@@ -718,3 +718,13 @@ dataDirectory: "/homeassistant/appdaemon/apps/edc_importer/data"
 
 ### Entity
 V prípadě, že stahování dat skončí chybou tak chybu najdete v atributu `error` u entity `input_text.edc_script_status` 
+
+### Import statistik
+V přápadě problémů s importem statistik [homeassistant-statistics](https://github.com/klausj1/homeassistant-statistics) si lze vypsat veškeré servisy co AppDaemon vidí. 
+
+Tototo provedete událostí `edc_print_services` a v logu AppDaemon by hste měli najít:
+
+```
+{'namespace': 'default', 'domain': 'import_statistics', 'service': 'import_from_file'}
+```
+Pak je AppDaemon schoen zavolat import dat do HA

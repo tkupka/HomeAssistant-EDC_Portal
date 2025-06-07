@@ -18,6 +18,7 @@ import calendar
 import logging
 from pathlib import Path
 from Colors import Colors
+from EdcLogger import EdcLogger
 
 
 class EdcScraper:
@@ -27,39 +28,41 @@ class EdcScraper:
     downloadDirectory = 'undefined'
     browserExecutable = 'undefined'
     exportGroup = 'undefined'
-    exportedFile = "automatic-export" 
+    exportedFile = "automatic-export"
+    uiLogger: EdcLogger = 'undefined' 
     
-    def __init__(self, browserExecutable, username, password, exportGroup, downloadDirectory):
+    def __init__(self, browserExecutable, username, password, exportGroup, downloadDirectory, logger: EdcLogger):
         self.browserExecutable = browserExecutable
         self.username = username
         self.password = password
         self.exportGroup = exportGroup
         self.downloadDirectory = downloadDirectory
+        self.uiLogger = logger
         
         os.makedirs(self.downloadDirectory, exist_ok=True)
         os.makedirs(self.downloadDirectory + "/debug", exist_ok=True)
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": EDC Initialized")
+        self.uiLogger.logAndPrint("EDC Initialized")
         
     
     def printInstalledModules(self):
-        print("\nInstalled Python Modules:")
+        self.uiLogger.print("\nInstalled Python Modules:")
         result = subprocess.run(['pip', 'list'], stdout=subprocess.PIPE, text=True)
-        print(result.stdout)
+        self.uiLogger.print(result.stdout)
     
     def getChromedriverVersion(self):
         try:
             result = subprocess.run(['chromedriver', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             if result.returncode == 0:
                 version_info = result.stdout.strip()
-                print(f"ChromeDriver Version: {version_info}")
+                self.uiLogger.print(f"ChromeDriver Version: {version_info}")
             else:
-                print(f"Error: {result.stderr.strip()}")
+                self.uiLogger.print(f"Error: {result.stderr.strip()}")
         except FileNotFoundError:
-            print("ChromeDriver is not installed or not found in the system PATH.")
+            self.uiLogger.print("ChromeDriver is not installed or not found in the system PATH.")
     
     def scrapeData(self, month, year):
         scrapeStartTime = dt.now()
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Scraping EDC data  *********************{Colors.RESET}")
+        self.uiLogger.logAndPrint("********************* Scraping EDC data  *********************", Colors.CYAN)
         self.cleanUpDirectory(self.downloadDirectory+"/")
         self.cleanUpDirectory(self.downloadDirectory+"/debug/")
         driver = self.initializeChromeDriver()
@@ -70,13 +73,13 @@ class EdcScraper:
             downloadedFile = self.downloadExport(driver)
             return Path(downloadedFile)
         except Exception as e:
-            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Unable to scrape data - exiting {e} {Colors.RESET}")
+            self.uiLogger.logAndPrint(f"ERROR: Unable to scrape data - exiting {str(e)}", Colors.RED)
             raise Exception("Unable to scrape EDC data")
         finally:
             self.logout(driver)
             scrapeEndTime = dt.now()
             scrapoeDuration = scrapeEndTime - scrapeStartTime
-            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Finished in {scrapoeDuration} *********************{Colors.RESET}")
+            self.uiLogger.logAndPrint(f"********************* Finished in {scrapoeDuration} *********************", Colors.CYAN)
         
     def initializeChromeDriver(self):
         chrome_options = Options()
@@ -95,9 +98,9 @@ class EdcScraper:
         service = Service(self.browserExecutable)#load service
         try:
             driver = webdriver.Chrome(service=service, options=chrome_options)
-            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Driver Loaded")
+            self.uiLogger.logAndPrint("Driver Loaded")
         except:
-            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Unable to initialize Chrome Driver - exitting{Colors.RESET}")
+            self.uiLogger.logAndPrint(f"RROR: Unable to initialize Chrome Driver - exitting", Colors.RED)
             raise Exception("Unable to initialize Chrome Driver - exitting")
         # Open a website
         driver.set_window_size(1920, 1080)
@@ -106,14 +109,14 @@ class EdcScraper:
     def loadMainPage(self, driver):
         try:
             driver.get("https://portal.edc-cr.cz/")  # Change to the website's login page
-            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": EDC Website loaded")
+            self.uiLogger.logAndPrint("EDC Website loaded")
         except:
-            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Unable to load website - exitting{Colors.RESET}")
+            self.uiLogger.logAndPrint(f"ERROR: Unable to load website - exitting", Colors.RED)
             raise Exception("Unable to open website - exitting")
         time.sleep(2)  # Allow time for the page to load
         
     def login(self, driver):
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Loading login page")
+        self.uiLogger.logAndPrint("Loading login page")
         try:
             loginLink = driver.find_element(By.XPATH, "//div[contains(@class, 'MuiBox-root')]//button[contains(text(), 'Přihlášení')]")
             loginLink.click()
@@ -135,13 +138,13 @@ class EdcScraper:
             time.sleep(2)
             self.createScreenshot(driver, "logged")
         except:
-            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to enter login details or find and click the login button{Colors.RESET}")
+            self.uiLogger.logAndPrint(f"ERROR: Failed to enter login details or find and click the login button", Colors.RED)
             raise Exception("Failed to find or click the login button")
         # Allow time for login processing
         time.sleep(2)
         
     def exportMonth(self, driver, month=dt.now().month, year=dt.now().year):
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": Exporting data {year}/{month}")
+        self.uiLogger.logAndPrint(f"Exporting data {year}/{month}")
         lastDay = calendar.monthrange(year, month)[1]
         try:
             driver.get("https://portal.edc-cr.cz/sprava-dat/zobrazeni-dat")
@@ -154,8 +157,9 @@ class EdcScraper:
             self.clickOnElement(driver, "//span[normalize-space()='Vyberte']/..")
             self.clickOnElement(driver, f"//li[@role='option' and text() = '{self.exportGroup}']")
             exportTypeXpath = "//span[normalize-space()='Denní hodnoty']"
-            if (self.useMonthExport(month)):
-                exportTypeXpath = "//span[normalize-space()='Měsíční hodnoty']"
+            #for now use only daily since month values are crappy 
+            #if (self.useMonthExport(month)):
+                #exportTypeXpath = "//span[normalize-space()='Měsíční hodnoty']"
                 
             self.clickOnElement(driver, exportTypeXpath)
             fromField = driver.find_element(By.XPATH, "//input[@name='dateFrom']")
@@ -186,7 +190,7 @@ class EdcScraper:
             self.createScreenshot(driver, "report_dialog")
             self.clickOnElement(driver, "//button[normalize-space()='Přejít na reporty']")
         except:
-            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to export data{Colors.RESET}")
+            self.uiLogger.logAndPrint(f"ERROR: Failed to export data", Colors.RED)
             logging.exception("Failed")
             raise Exception("Failed to export data")
         # Allow time for login processing
@@ -209,14 +213,14 @@ class EdcScraper:
         return newPath
 
     def clickOnElement(self, driver, xpath):
-        print(f"   :clicking on xpath[{xpath}]")
+        self.uiLogger.logAndPrint(f"   :clicking on xpath[{xpath}]", Colors.YELLOW, False)
         link = driver.find_element(By.XPATH, xpath)
         link.click()
         time.sleep(1)
         
 
     def logout(self, driver, failInError=False):
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": Logging out")
+        self.uiLogger.logAndPrint(f"Logging out")
         try:
             #self.loadMainPage(driver) #just in case reload the app
             menuLink = driver.find_element(By.XPATH, "//button[@title='Menu']")
@@ -237,7 +241,7 @@ class EdcScraper:
         body.screenshot(self.downloadDirectory+f"/debug/{page}.png")
             
     def cleanUpDirectory(self, folderPath):
-        print(f"Clean-up directory {folderPath}")
+        self.uiLogger.logAndPrint(f"Clean-up directory {folderPath}")
         for filename in os.listdir(folderPath):
             file_path = os.path.join(folderPath, filename)
             try:
@@ -246,7 +250,7 @@ class EdcScraper:
                 #elif os.path.isdir(file_path):
                     #shutil.rmtree(file_path)  # Removes directories and their contents recursively.
             except Exception as e:
-                print(f"Failed to delete {file_path}. Reason: {e}")
+                self.uiLogger.logAndPrint(f"Failed to delete {file_path}. Reason: {e}")
 
 
 
