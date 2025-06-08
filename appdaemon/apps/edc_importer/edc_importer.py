@@ -1,5 +1,6 @@
+version = "1.3.0"
+
 from EdcLogger import EdcLogger
-version = "1.2.0"
 
 import hassapi as hass
 import platform

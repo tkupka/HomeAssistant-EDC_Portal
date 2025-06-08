@@ -1,10 +1,10 @@
-from edc import Csv, Interval, GroupingOptions, Ean, Measurement
 from typing import List, AnyStr
 from pathlib import Path
-from datetime import datetime
 from functools import partial
 import json
 import calendar
+from datetime import datetime
+from edc import Csv, Interval, GroupingOptions, Ean, Measurement
 from EdcLogger import EdcLogger
 
 class EdcExporter:
@@ -78,11 +78,30 @@ class EdcExporter:
 
 
 	def exportConsumptionForEans(self, intervals: List[Interval], eans: List[Ean], dataType: AnyStr, grouping: GroupingOptions, dataResolver: partial, calculator: partial):
-		for i, ean in enumerate(eans):
+		for eanIndex, ean in enumerate(eans):
 			self.uiLogger.logAndPrint(f"Exporting {dataType} EAN  [{ean.name}].")
 			entityName = self.createEntity("edc_data", dataType, self.convertGroupinToName(grouping), ean.name)
-			file = self.exportFile(i, ean.name, entityName, intervals, dataResolver, calculator, dataType, grouping)
+			file = self.exportFile(eanIndex, ean.name, entityName, intervals, dataResolver, calculator, dataType, grouping)
 			self.uploadFile(file)
+			
+			if (grouping == "1m"):
+				#update current state just for monthly interval
+				self.updateEntityState(entityName, ean, eanIndex, intervals, dataResolver, calculator)
+	
+	def updateEntityState(self, entityName: AnyStr, ean: AnyStr, eanIndex: int, intervals: List[Interval], dataResolver: partial, calculator: partial):
+		year = datetime.now().year
+		month = datetime.now().month
+
+		for interval in intervals:
+			statisticDate: datetime = self.parseIntervalStart(interval)
+			#just current month
+			if ((statisticDate.month == month) and (statisticDate.year == year)):
+				completeEntityName = f"input_number.{entityName}"
+				data = dataResolver(interval)
+				value = calculator(data[eanIndex])
+				self.uiLogger.logAndPrint(f"Updating monthly [{statisticDate.year}::{statisticDate.month}] entity [{completeEntityName}] sate to [{value}]")
+				if (self.hass != 'undefined'):
+					self.hass.set_state(completeEntityName,state=value)
 		
 	#dataType: producer/consumer
 	#interval: hour/day/month
@@ -93,7 +112,7 @@ class EdcExporter:
 			
 			self.hass.set_state(f"input_number.{completeEntityName}",state=0,attributes={
 				"unique_id": f"{completeEntityName}",
-				"friendly_name": f"EDC {dataType.capitalize()} {interval.capitalize()} for EAN: {ean}",
+				"name": f"EDC {dataType.capitalize()} {interval.capitalize()} for EAN: {ean}",
 				"icon" : "mdi:database-arrow-down",
 				"state_class": "measurement",
 				"unit_of_measurement": "kWh"
@@ -101,7 +120,7 @@ class EdcExporter:
 		return completeEntityName
 
 
-	def exportFile(self, i, ean, entityName, intervals: List[Interval], dataResolver, calculator: partial, dataType: AnyStr, grouping: GroupingOptions):
+	def exportFile(self, i, ean: AnyStr, entityName, intervals: List[Interval], dataResolver, calculator: partial, dataType: AnyStr, grouping: GroupingOptions):
 		fileName = f"{dataType}_export_{ean}_{grouping}.csv"
 		fileName = (self.dataDirectory / fileName)
 		self.uiLogger.logAndPrint(f"Exporting file [{fileName.resolve()}]")
@@ -109,7 +128,7 @@ class EdcExporter:
 		exportFile.write(f"{self.exportHeader}\n")
 		
 		for interval in intervals:
-			statisticDate: datetime = datetime.strptime(f"{interval.start}", "%Y-%m-%d %H:%M:%S")
+			statisticDate: datetime = self.parseIntervalStart(interval)
 			data = dataResolver(interval)
 			value = calculator(data[i])
 
@@ -122,6 +141,9 @@ class EdcExporter:
 			
 		exportFile.close()
 		return fileName
+	
+	def parseIntervalStart(self, interval: Interval) -> datetime:
+		return datetime.strptime(f"{interval.start}", "%Y-%m-%d %H:%M:%S")
 	
 	def writeData(self, exportFile, entityName, statisticDate, value):
 		statisticDateStr = statisticDate.strftime('%d.%m.%Y %H:%M')

@@ -659,6 +659,65 @@ series:
 
 ```
 
+Veškeré entity s měíční agregací jak pro producenta tak pro konzumenta, tedy například  `input_number.edc_data_consumer_purchased_<Producer  EAN>_monthly` při importu také mění svůj aktuální stav. Můžete je tedy použít k zobrazení aktuálního stavu.
+
+![Current Status](/images/current_status.png )
+
+```
+type: custom:config-template-card
+variables:
+entities:
+  - input_number.edc_data_shared_<Producer EAN>_monthly
+card:
+  type: custom:canvas-gauge-card
+  entity: input_number.edc_data_shared_<Producer EAN>_monthly
+  card_height: 130
+  gauge:
+    type: radial-gauge
+    title: >-
+      ${'Production: ' +
+      Math.round(states['input_number.edc_data_shared_<Producer EAN>_monthly'].state)
+      + ' kWh'}
+    width: 220
+    height: 220
+    borderShadowWidth: 0
+    borderOuterWidth: 0
+    borderMiddleWidth: 0
+    borderInnerWidth: 0
+    minValue: 0
+    maxValue: 1000
+    startAngle: 90
+    ticksAngle: 180
+    valueBox: false
+    majorTicks:
+      - "0"
+      - "100"
+      - "200"
+      - "300"
+      - "400"
+      - "500"
+      - "600"
+      - "800"
+      - "900"
+      - "1000"
+    minorTicks: 2
+    strokeTicks: true
+    highlights:
+      - from: 0
+        to: 100
+        color: rgba(200, 50, 50, .75)
+      - from: 100
+        to: 300
+        color: rgba(255, 153, 51, .75)
+      - from: 300
+        to: 1000
+        color: rgba(76, 153, 0, .75)
+    borders: false
+  view_layout:
+    grid-area: month1
+
+```
+
 > [!TIP]
 > Pokud máte  nainstalované [Mushroom cards](https://github.com/piitaya/lovelace-mushroom) tak si můžete uělat malý toolbar kde jde vidět stav aplikace.
 
