@@ -1,11 +1,10 @@
-version = "1.3.0"
+version = "1.3.1"
 
 from EdcLogger import EdcLogger
-
+import utils
 import hassapi as hass
 import platform
 from datetime import datetime as dt
-from dateutil.relativedelta import relativedelta
 import time
 from EdcScraper import EdcScraper
 import edc
@@ -13,7 +12,6 @@ from EdcExporter import EdcExporter
 from Colors import Colors
 from typing import List
 from edc import GroupingOptions
-
 
 
 class EDCImporter(hass.Hass):
@@ -53,6 +51,7 @@ class EDCImporter(hass.Hass):
         self.uiLogger.print(f"Architecture: {platform.machine()}")
         self.uiLogger.print(f"Processor: {platform.processor()}")
         self.uiLogger.print(f"Python Version: {platform.python_version()}")
+        
 
     def printServicesEventHandler(self, event_name, data, kwargs):
         availableServices = self.list_services(namespace="global")
@@ -80,7 +79,7 @@ class EDCImporter(hass.Hass):
             time.sleep(30)
             # call it again in case of failure
             self.executeEdcImport(month, year, self.defaultGroupings)
-        if (day >=6 and day <=8):
+        if (day >=8 and day <=10):
             #download whole previous month. God knows when it's ready in EDC
             month = month - 1
             if (month <= 0):
@@ -98,7 +97,7 @@ class EDCImporter(hass.Hass):
 
         
     def importEdcDataForDefaultInterval(self):
-        downloadIntervals= self.getLastMonths(dt.today(), 2)[::-1]
+        downloadIntervals= utils.getLastMonths(dt.today(), 2)[::-1]
         for downloadInterval in downloadIntervals:
             year = downloadInterval[0]
             month = downloadInterval[1]
@@ -173,12 +172,4 @@ class EDCImporter(hass.Hass):
             self.set_state("binary_sensor.edc_running", state="off")
             self.uiLogger.logAndPrint(f"********************* Finished in {edcDuration} *********************", Colors.CYAN)
         
-
-    def getLastMonths(self, start_date, months) -> List[tuple]:
-        return [i for i in self.getLastMonthsImpl(start_date, months)]
-    
-    def getLastMonthsImpl(self, start_date, months):
-        for i in range(months):
-            yield (start_date.year,start_date.month)
-            start_date += relativedelta(months = -1)
 

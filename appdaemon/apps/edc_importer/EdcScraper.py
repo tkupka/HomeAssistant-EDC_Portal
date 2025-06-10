@@ -19,6 +19,7 @@ import logging
 from pathlib import Path
 from Colors import Colors
 from EdcLogger import EdcLogger
+import utils
 
 
 class EdcScraper:
@@ -158,7 +159,7 @@ class EdcScraper:
             self.clickOnElement(driver, f"//li[@role='option' and text() = '{self.exportGroup}']")
             exportTypeXpath = "//span[normalize-space()='Denní hodnoty']"
             #for now use only daily since month values are crappy 
-            #if (self.useMonthExport(month)):
+            #if (self.useMonthExport(month, year)):
                 #exportTypeXpath = "//span[normalize-space()='Měsíční hodnoty']"
                 
             self.clickOnElement(driver, exportTypeXpath)
@@ -196,10 +197,14 @@ class EdcScraper:
         # Allow time for login processing
         time.sleep(5)
         
-    def useMonthExport(self, month)-> bool:
+    def useMonthExport(self, month: int, year: int)-> bool:
         now = dt.now()
-        if (((now.month -1) == month) and (now.day <= 5)) or (month == now.month):
-            #there is 5 days period to adjust month data
+        lastMonthsInterval = utils.getLastMonths(dt.today(), 2)[::-1]
+        lastMonthYear = lastMonthsInterval[0][0]
+        lastMonth = lastMonthsInterval[0][1]
+        #if (((now.month -1) == month) and (now.day <= 9)) or (month == now.month):
+        if ((month == now.month and now.year == year) or (month == lastMonth and year == lastMonthYear and now.day <=9)):
+            #there is 5 days period to adjust month data plus a Bulgarian constant
             return False
         return True
 

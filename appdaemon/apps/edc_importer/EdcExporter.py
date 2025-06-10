@@ -108,15 +108,17 @@ class EdcExporter:
 	def createEntity(self, entityBaseName: AnyStr, dataType: AnyStr, interval: AnyStr, ean: AnyStr):
 		completeEntityName = f"{entityBaseName}_{dataType}_{ean}_{interval}"
 		if (self.hass != 'undefined'):
-			self.uiLogger.logAndPrint(f"Creating entity [{completeEntityName}")
-			
-			self.hass.set_state(f"input_number.{completeEntityName}",state=0,attributes={
-				"unique_id": f"{completeEntityName}",
-				"name": f"EDC {dataType.capitalize()} {interval.capitalize()} for EAN: {ean}",
-				"icon" : "mdi:database-arrow-down",
-				"state_class": "measurement",
-				"unit_of_measurement": "kWh"
-			})
+			fullEntityName = f"input_number.{completeEntityName}"
+			existingState = self.hass.get_state(fullEntityName)
+			if (existingState == None):
+				self.uiLogger.logAndPrint(f"Creating entity [{completeEntityName}")
+				self.hass.set_state(fullEntityName,state=0,attributes={
+					"unique_id": f"{completeEntityName}",
+					"name": f"EDC {dataType.capitalize()} {interval.capitalize()} for EAN: {ean}",
+					"icon" : "mdi:database-arrow-down",
+					"state_class": "measurement",
+					"unit_of_measurement": "kWh"
+				})
 		return completeEntityName
 
 
