@@ -1,4 +1,4 @@
-version = "1.3.1"
+version = "1.3.2"
 
 from EdcLogger import EdcLogger
 import utils
@@ -69,9 +69,14 @@ class EDCImporter(hass.Hass):
         year = dt.now().year
         month = dt.now().month
         day = dt.now().day
+        lastMonthsInterval = utils.getLastMonths(dt.today(), 2)[::-1]
+        lastMonthYear = lastMonthsInterval[0][0]
+        lastMonth = lastMonthsInterval[0][1]
+
         if (day == 1):
             ## still last month required
-            month = month - 1
+            month = lastMonth
+            year = lastMonthYear
             
         try:
             self.executeEdcImport(month, year, self.defaultGroupings)
@@ -79,11 +84,9 @@ class EDCImporter(hass.Hass):
             time.sleep(30)
             # call it again in case of failure
             self.executeEdcImport(month, year, self.defaultGroupings)
+        
         if (day >=8 and day <=10):
             #download whole previous month. God knows when it's ready in EDC
-            lastMonthsInterval = utils.getLastMonths(dt.today(), 2)[::-1]
-            lastMonthYear = lastMonthsInterval[0][0]
-            lastMonth = lastMonthsInterval[0][1]
             try:
                 self.executeEdcImport(lastMonth, lastMonthYear, self.defaultGroupings)
             except Exception:
