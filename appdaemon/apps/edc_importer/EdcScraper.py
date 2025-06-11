@@ -40,11 +40,14 @@ class EdcScraper:
         self.downloadDirectory = downloadDirectory
         self.uiLogger = logger
         
-        os.makedirs(self.downloadDirectory, exist_ok=True)
-        os.makedirs(self.downloadDirectory + "/debug", exist_ok=True)
-        self.uiLogger.logAndPrint("EDC Initialized")
+        self.prepareDataDirectories()
+        self.uiLogger.logAndPrint("EDC Scraper Initialized")
         
-    
+    def prepareDataDirectories(self):
+        os.makedirs(self.downloadDirectory, exist_ok=True)
+        self.cleanUpDirectory(self.downloadDirectory+"/")
+        os.makedirs(self.downloadDirectory + "/debug", exist_ok=True)
+        
     def printInstalledModules(self):
         self.uiLogger.print("\nInstalled Python Modules:")
         result = subprocess.run(['pip', 'list'], stdout=subprocess.PIPE, text=True)
@@ -64,8 +67,8 @@ class EdcScraper:
     def scrapeData(self, month, year):
         scrapeStartTime = dt.now()
         self.uiLogger.logAndPrint("********************* Scraping EDC data  *********************", Colors.CYAN)
-        self.cleanUpDirectory(self.downloadDirectory+"/")
-        self.cleanUpDirectory(self.downloadDirectory+"/debug/")
+        self.prepareDataDirectories()
+        
         driver = self.initializeChromeDriver()
         try:
             self.loadMainPage(driver)
@@ -159,8 +162,8 @@ class EdcScraper:
             self.clickOnElement(driver, f"//li[@role='option' and text() = '{self.exportGroup}']")
             exportTypeXpath = "//span[normalize-space()='Denní hodnoty']"
             #for now use only daily since month values are crappy 
-            #if (self.useMonthExport(month, year)):
-                #exportTypeXpath = "//span[normalize-space()='Měsíční hodnoty']"
+            if (self.useMonthExport(month, year)):
+                exportTypeXpath = "//span[normalize-space()='Měsíční hodnoty']"
                 
             self.clickOnElement(driver, exportTypeXpath)
             fromField = driver.find_element(By.XPATH, "//input[@name='dateFrom']")
@@ -252,8 +255,8 @@ class EdcScraper:
             try:
                 if os.path.isfile(file_path) or os.path.islink(file_path):
                     os.unlink(file_path)  # Removes each file.
-                #elif os.path.isdir(file_path):
-                    #shutil.rmtree(file_path)  # Removes directories and their contents recursively.
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)  # Removes directories and their contents recursively.
             except Exception as e:
                 self.uiLogger.logAndPrint(f"Failed to delete {file_path}. Reason: {e}")
 

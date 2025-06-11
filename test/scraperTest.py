@@ -15,7 +15,7 @@ class TestScraper(unittest.TestCase):
         configuration = json.loads(configFile.read_text())
        
         month = dt.now().month
-        month = 5
+        #month = 6
         year = 2025
         dataDirectory = str((Path.cwd() / "../data").resolve())
         logger = EdcLogger()
@@ -32,5 +32,6 @@ if __name__ == '__main__':
 #{
 #    "user": "XXXX",
 #    "password": "XXXX",
-#    "group": "XXXXX"
+#    "group": "XXXXX",
+#    "chromeDriverPath": "XXXX"
 #}

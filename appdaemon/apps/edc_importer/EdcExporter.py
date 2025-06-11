@@ -18,6 +18,7 @@ class EdcExporter:
 		self.hass = hass
 		self.uiLogger = logger
 		self.dataDirectory = Path(f"{dataDirectory}/")
+		self.uiLogger.logAndPrint("EDC Exporter Initialized")
 		
 	def exportData(self, parsedData: Csv, grouping: GroupingOptions = "1m"):
 		self.uiLogger.logAndPrint(f"Exporting data {grouping}")
@@ -111,7 +112,7 @@ class EdcExporter:
 			fullEntityName = f"input_number.{completeEntityName}"
 			existingState = self.hass.get_state(fullEntityName)
 			if (existingState == None):
-				self.uiLogger.logAndPrint(f"Creating entity [{completeEntityName}")
+				self.uiLogger.logAndPrint(f"Creating entity [{completeEntityName}, existing state: [{existingState}]")
 				self.hass.set_state(fullEntityName,state=0,attributes={
 					"unique_id": f"{completeEntityName}",
 					"name": f"EDC {dataType.capitalize()} {interval.capitalize()} for EAN: {ean}",

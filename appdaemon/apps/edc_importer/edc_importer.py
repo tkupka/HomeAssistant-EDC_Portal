@@ -81,15 +81,14 @@ class EDCImporter(hass.Hass):
             self.executeEdcImport(month, year, self.defaultGroupings)
         if (day >=8 and day <=10):
             #download whole previous month. God knows when it's ready in EDC
-            month = month - 1
-            if (month <= 0):
-                month = 12
-                year = year - 1
+            lastMonthsInterval = utils.getLastMonths(dt.today(), 2)[::-1]
+            lastMonthYear = lastMonthsInterval[0][0]
+            lastMonth = lastMonthsInterval[0][1]
             try:
-                self.executeEdcImport(month, year, self.defaultGroupings)
+                self.executeEdcImport(lastMonth, lastMonthYear, self.defaultGroupings)
             except Exception:
                 time.sleep(30)
-                self.executeEdcImport(month, year, self.defaultGroupings)
+                self.executeEdcImport(lastMonth, lastMonthYear, self.defaultGroupings)
         
     def printScraperInfo(self, data, **kwargs):
         self.edcScraper.printInstalledModules()
