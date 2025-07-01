@@ -127,7 +127,7 @@ class EdcScraper:
             time.sleep(3)  # Allow time for the page to load
             self.createScreenshot(driver, "pre_login")
                        
-            username_field = driver.find_element(By.XPATH, "//input[@id='email']")
+            username_field = driver.find_element(By.XPATH, "//input[@id='username']")
             password_field = driver.find_element(By.XPATH, "//input[@id='password']")
             loginButton = driver.find_element(By.XPATH, "//button[@id='kc-login']")
             # Enter login credentials and click the button
