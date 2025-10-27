@@ -112,9 +112,10 @@ class EdcExporter:
 			fullEntityName = f"input_number.{completeEntityName}"
 			existingState = self.hass.get_state(fullEntityName)
 			if (existingState == None):
-				self.uiLogger.logAndPrint(f"Creating entity [{completeEntityName}, existing state: [{existingState}]")
-				self.hass.set_state(fullEntityName,state=0,attributes={
-					"unique_id": f"{completeEntityName}",
+				self.uiLogger.logAndPrint(f"Creating entity [{fullEntityName}, existing state: [{existingState}]")
+
+				self.hass.set_state(fullEntityName, state=0.1,attributes={
+					"unique_id": f"{fullEntityName}",
 					"name": f"EDC {dataType.capitalize()} {interval.capitalize()} for EAN: {ean}",
 					"icon" : "mdi:database-arrow-down",
 					"state_class": "measurement",

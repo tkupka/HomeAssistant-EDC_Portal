@@ -1,8 +1,8 @@
-version = "1.3.2"
+version = "1.3.5"
 
 from EdcLogger import EdcLogger
 import utils
-import hassapi as hass
+from appdaemon.plugins.hass import Hass
 import platform
 from datetime import datetime as dt
 import time
@@ -14,7 +14,7 @@ from typing import List
 from edc import GroupingOptions
 
 
-class EDCImporter(hass.Hass):
+class EDCImporter(Hass):
     
     edcScraper = 'undefined'
     edcExporter = 'undefined'
@@ -38,6 +38,10 @@ class EDCImporter(hass.Hass):
         self.run_daily(self.runDailCallback, "10:15:00")
         self.set_state("input_text.edc_version", state=version,attributes={
             "name": "EDC Version",
+        })
+        self.set_state("input_number.edc_data_Y_consumer_missed_859182400504099833_min", state=1,attributes={
+            "unique_id": "input_number.edc_data_Y_consumer_missed_859182400504099833_min",
+            "name": "TMP",
         })
 
         self.printSystemInfo()

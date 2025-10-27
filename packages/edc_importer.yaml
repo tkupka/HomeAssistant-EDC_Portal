@@ -40,6 +40,13 @@ script:
         event_data: {}
     mode: single
     icon: "mdi:calendar-start-outline"
+  edc_import_daily:
+    alias: EDC Import daily data
+    sequence:
+      - event: edc_import_daily
+        event_data: {}
+    mode: single
+    icon: "mdi:calendar-start-outline"
 
 homeassistant:
   # customization of elements, setting name, icons etc.
