@@ -100,6 +100,8 @@ class EdcExporter:
 				completeEntityName = f"input_number.{entityName}"
 				data = dataResolver(interval)
 				value = calculator(data[eanIndex])
+				if (value == 0):
+					value = 0.1
 				self.uiLogger.logAndPrint(f"Updating monthly [{statisticDate.year}::{statisticDate.month}] entity [{completeEntityName}] sate to [{value}]")
 				if (self.hass != 'undefined'):
 					self.hass.set_state(completeEntityName,state=value)
