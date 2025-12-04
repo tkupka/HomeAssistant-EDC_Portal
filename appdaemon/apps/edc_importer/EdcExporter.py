@@ -108,19 +108,21 @@ class EdcExporter:
 	#interval: hour/day/month
 	def createEntity(self, entityBaseName: AnyStr, dataType: AnyStr, interval: AnyStr, ean: AnyStr):
 		completeEntityName = f"{entityBaseName}_{dataType}_{ean}_{interval}"
+		fullEntityName = f"input_number.{completeEntityName}"
 		if (self.hass != 'undefined'):
-			fullEntityName = f"input_number.{completeEntityName}"
 			existingState = self.hass.get_state(fullEntityName)
-			if (existingState == None):
-				self.uiLogger.logAndPrint(f"Creating entity [{fullEntityName}, existing state: [{existingState}]")
+			#if (existingState == None):
+			self.uiLogger.logAndPrint(f"Creating entity [{fullEntityName}, existing state: [{existingState}]")
 
-				self.hass.set_state(fullEntityName, state=0.1,attributes={
-					"unique_id": f"{fullEntityName}",
-					"name": f"EDC {dataType.capitalize()} {interval.capitalize()} for EAN: {ean}",
-					"icon" : "mdi:database-arrow-down",
-					"state_class": "measurement",
-					"unit_of_measurement": "kWh"
-				})
+			self.hass.set_state(fullEntityName, state=0.1,attributes={
+				"unique_id": f"{fullEntityName}",
+				"name": f"EDC {dataType.capitalize()} {interval.capitalize()} for EAN: {ean}",
+				"icon" : "mdi:database-arrow-down",
+				"state_class": "measurement",
+				"unit_of_measurement": "kWh"
+			})
+			#else: 
+		#		self.uiLogger.logAndPrint(f"Entity exists [{fullEntityName}, with state: [{existingState}]")
 		return completeEntityName
 
 

@@ -166,8 +166,12 @@ class EdcScraper:
                 exportTypeXpath = "//span[normalize-space()='Měsíční hodnoty']"
                 
             self.clickOnElement(driver, exportTypeXpath)
-            fromField = driver.find_element(By.XPATH, "//input[@name='dateFrom']")
-            toField = driver.find_element(By.XPATH, "//input[@name='dateTo']")
+            #fromField = driver.find_element(By.XPATH, "//input[@name='dateFrom']")
+            fromField = driver.find_element(By.XPATH, "//div[@class='MuiPickersSectionList-root MuiPickersInputBase-sectionsContainer css-nku1pl']")
+            
+            #toField = driver.find_element(By.XPATH, "//input[@name='dateTo']")
+            toField = driver.find_element(By.XPATH, "//div[@class='MuiPickersSectionList-root MuiPickersInputBase-sectionsContainer css-nku1pl']")
+            
             #fromField.clear()
             #toField.clear()
             fromField.click()
