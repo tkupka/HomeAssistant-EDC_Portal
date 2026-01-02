@@ -157,7 +157,7 @@ Poté zkontrolujte zdali se v **HA** vytvořily statické entity.
 Aplikace reaguje na `eventy` kterými se stahují data. Pokud si chcete stáhnout data tak jsou k dispozici následující možnosti.
 
 > [!TIP]
-> Data pro aktuální měsíc a předchozí den se stahují každý den v `10:15`.
+> Data pro aktuální měsíc a předchozí den se stahují každý den v náhodném čase mezi `10:15` a `14:15` (distribuce zátěže na EDC portál).
 
 ### Stažení aktuálních dat 
 Pro stažení aktuálních date b HA pošlete event `edc_import_daily` bez parametrů. Stáhne se aktuální a předcjhozí měsíc.
