@@ -36,7 +36,7 @@ class EdcExporter:
 		
 	def exportProducerSharedEnergy(self, parsedData: Csv, intervals: List[Interval], grouping: GroupingOptions):
 		#create entities
-		self.uiLogger.logAndPrint(f"Exporting Shared energy for producer between EAN(s).")
+		self.uiLogger.logAndPrint(f"Exporting Shared energy for producer between EANs.")
 		#it might be consumer resolver....
 		dataResolver = partial(self.resolveProducer)
 		#dataResolver = partial(self.resolveConsumer)
@@ -45,7 +45,7 @@ class EdcExporter:
 
 	def exportConsumerSharedEnergy(self, parsedData: Csv, intervals: List[Interval], grouping: GroupingOptions):
 		#create entities
-		self.uiLogger.logAndPrint(f"Exporting Shared energy for producer between EANS.")
+		self.uiLogger.logAndPrint(f"Exporting Shared energy for consumer between EANs.")
 		#it might be consumer resolver....
 		dataResolver = partial(self.resolveConsumer)
 		calculator = partial(self.calculateBeforeAfterDifference)
@@ -227,4 +227,4 @@ class EdcExporter:
 		elif grouping == "1m":
 			return "monthly"
 		else:
-			raise ValueError("Unknown grouping option")  # TS throw new Error()
+            raise ValueError("Unknown grouping option")  # TS throw new Error()
