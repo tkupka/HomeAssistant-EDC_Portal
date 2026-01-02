@@ -1,6 +1,5 @@
 import platform
 import subprocess
-from datetime import datetime as dt
 import os,glob
 import shutil
 import time
@@ -166,25 +165,41 @@ class EdcScraper:
                 exportTypeXpath = "//span[normalize-space()='Měsíční hodnoty']"
                 
             self.clickOnElement(driver, exportTypeXpath)
-            #fromField = driver.find_element(By.XPATH, "//input[@name='dateFrom']")
-            fromField = driver.find_element(By.XPATH, "//div[@class='MuiPickersSectionList-root MuiPickersInputBase-sectionsContainer css-nku1pl']")
-            
-            #toField = driver.find_element(By.XPATH, "//input[@name='dateTo']")
-            toField = driver.find_element(By.XPATH, "//div[@class='MuiPickersSectionList-root MuiPickersInputBase-sectionsContainer css-nku1pl']")
-            
-            #fromField.clear()
-            #toField.clear()
-            fromField.click()
-            fromField.send_keys(Keys.ARROW_LEFT*5)
-            fromField.send_keys("01")
-            fromField.send_keys(f"{month:02d}")
-            fromField.send_keys(f"{year}")
-            
-            toField.click()
-            toField.send_keys(Keys.ARROW_LEFT*5)
-            toField.send_keys(f"{lastDay}")
-            toField.send_keys(f"{month:02d}")
-            toField.send_keys(f"{year}")
+
+            # Fill dateFrom using MUI date picker segments
+            self.uiLogger.logAndPrint("Filling dateFrom field...")
+
+            # Day segment (first date picker)
+            day_from_xpath = "//input[@name='dateFrom']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Day' and @contenteditable='true']"
+            self.fillDateSegment(driver, day_from_xpath, "01", "dateFrom Day")
+
+            # Month segment
+            month_from_xpath = "//input[@name='dateFrom']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Month' and @contenteditable='true']"
+            self.fillDateSegment(driver, month_from_xpath, f"{month:02d}", "dateFrom Month")
+
+            # Year segment
+            year_from_xpath = "//input[@name='dateFrom']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Year' and @contenteditable='true']"
+            self.fillDateSegment(driver, year_from_xpath, year, "dateFrom Year")
+
+            self.createScreenshot(driver, "dateFrom_filled")
+
+            # Fill dateTo using MUI date picker segments
+            self.uiLogger.logAndPrint("Filling dateTo field...")
+
+            # Day segment (second date picker)
+            day_to_xpath = "//input[@name='dateTo']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Day' and @contenteditable='true']"
+            self.fillDateSegment(driver, day_to_xpath, f"{lastDay:02d}", "dateTo Day")
+
+            # Month segment
+            month_to_xpath = "//input[@name='dateTo']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Month' and @contenteditable='true']"
+            self.fillDateSegment(driver, month_to_xpath, f"{month:02d}", "dateTo Month")
+
+            # Year segment
+            year_to_xpath = "//input[@name='dateTo']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Year' and @contenteditable='true']"
+            self.fillDateSegment(driver, year_to_xpath, year, "dateTo Year")
+
+            self.createScreenshot(driver, "dateTo_filled")
+            time.sleep(1)  # Allow date pickers to update
             self.createScreenshot(driver, "export_data")
             self.clickOnElement(driver, "//button[normalize-space()='Export']")
             self.createScreenshot(driver, "export_confirm")
@@ -229,7 +244,39 @@ class EdcScraper:
         link = driver.find_element(By.XPATH, xpath)
         link.click()
         time.sleep(1)
-        
+
+    def fillDateSegment(self, driver, xpath, value, segment_name="segment"):
+        """
+        Fills a single date segment (day/month/year) in MUI date picker
+
+        Args:
+            driver: Selenium WebDriver
+            xpath: XPath to the contenteditable span
+            value: String or int value to enter
+            segment_name: Name for logging (e.g., "Day", "Month", "Year")
+        """
+        try:
+            self.uiLogger.logAndPrint(f"   :filling {segment_name} with value [{value}]", Colors.YELLOW, False)
+
+            # Wait for segment to be clickable
+            segment = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, xpath))
+            )
+
+            # Click to focus and select the segment (MUI auto-selects on click)
+            segment.click()
+            time.sleep(0.2)  # Small delay for focus to settle
+
+            # Type new value (MUI auto-advances to next field when complete)
+            segment.send_keys(str(value))
+            time.sleep(0.3)  # Wait for auto-advance
+
+            self.uiLogger.logAndPrint(f"   :{segment_name} filled successfully", Colors.GREEN, False)
+            return True
+
+        except Exception as e:
+            self.uiLogger.logAndPrint(f"ERROR: Failed to fill {segment_name}: {str(e)}", Colors.RED)
+            raise
 
     def logout(self, driver, failInError=False):
         self.uiLogger.logAndPrint(f"Logging out")
