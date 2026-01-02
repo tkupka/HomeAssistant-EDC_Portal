@@ -227,4 +227,4 @@ class EdcExporter:
 		elif grouping == "1m":
 			return "monthly"
 		else:
-            raise ValueError("Unknown grouping option")  # TS throw new Error()
+			raise ValueError("Unknown grouping option")  # TS throw new Error()
