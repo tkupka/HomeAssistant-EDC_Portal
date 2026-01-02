@@ -1,5 +1,5 @@
 # HomeAssistant-EDC_Portal
-Stažení dat z EDC Portálu do Home Assistent. Projekt je inspirovan projektem [EdcReportAnalyzer](https://ondrejkarlik.github.io/EdcDataAnalyzer/dist/EdcReportAnalyzer.html)
+Stažení dat z EDC Portálu do Home Assistant. Projekt je inspirován projektem [EdcReportAnalyzer](https://ondrejkarlik.github.io/EdcDataAnalyzer/dist/EdcReportAnalyzer.html)
 
 Data se kalkulují pro tyto intervaly:
 * `15m` - 15 minut
@@ -16,18 +16,18 @@ Data jsou stažena do statistik, tudíž jsou k dispozici pro HA jenom tyto inte
 
 Ostatní intervaly HA neuloží. Pokud někdo zjistí jak tyto statistiky uložit tak mi dejte vědět :-).
 
-Nejdříve se stáhnoout data z EDC portálu a pak se vygeneruje CSV export, který je nahrán jako statistika do HA.
+Nejdříve se stáhnou data z EDC portálu a pak se vygeneruje CSV export, který je nahrán jako statistika do HA.
 
 Jelikož se se statistiky nahrávají jako externí tak by v podstatě nebyla potřeba žádná entita. Ovšem pro zachování přehlednosti a jednoduššího hledání jsou vytvořeny také entity pod stejným jménem.
 
 Systém má statické entity:
 * **edc_script_duration** - Doba běhu skriptu
 * **edc_script_status** - Parametry skriptu
-* **edc_producer_eans** -Seznam EANu produkujících elektřinu
-* **edc_consumer_eans** - Seznam EANu konzumujících  
-* **edc_running** - Binární senzor při pěhu skriptu = `on`
+* **edc_producer_eans** - Seznam EANů produkujících elektřinu
+* **edc_consumer_eans** - Seznam EANů konzumujících
+* **edc_running** - Binární senzor při běhu skriptu = `on`
 
-Systém má dynamické entity pro jednotlivé intervaly. Jméno intervalu je použito jako `suffix` jme entity.
+Systém má dynamické entity pro jednotlivé intervaly. Jméno intervalu je použito jako `suffix` jména entity.
 * **fluent** - 15 minut
 * **hourly** - hodina
 * **daily** - den
@@ -37,20 +37,20 @@ Dynamické entity:
 * **edc_data_shared_\<consumer EAN\>_\<interval\>** - Sdílená elektřina odběrovým EAN-em
 * **edc_data_producer_missed_\<producer EAN\>_\<interval\>** - Elektřina prodána producentem do sítě, která ovšem mohla být sdílená. (Spotřebitelé měli dostatečný odběr ovšem pravděpodobně z důvodu nastaveni nebyla sdílená)
 * **edc_data_producer_sold_network_\<producer EAN\>_\<interval\>** - Elektřina prodána producentem do sítě pro kterou nebyl odběr o konzumentů.
-* **edc_data_consumer_missed_\<consumer EAN\>_\<interval\>** - Elektřina u odběratele, která mohla být sdílena. tedy existovala  dostatečná kapacita u výrobce.
-* **edc_data_consumer_purchased_\<consumer EAN\>_\<interval\>** - Nakoupená elektrina odběratelem ze sítě.
+* **edc_data_consumer_missed_\<consumer EAN\>_\<interval\>** - Elektřina u odběratele, která mohla být sdílena, tedy existovala dostatečná kapacita u výrobce.
+* **edc_data_consumer_purchased_\<consumer EAN\>_\<interval\>** - Nakoupená elektřina odběratelem ze sítě.
 
 > [!IMPORTANT]
-> Všechny hodnoty v `missed` jsou již také započteny do hodnot v `sold/purchsed` a není je tedy potřeba připočítávat.
+> Všechny hodnoty v `missed` jsou již také započteny do hodnot v `sold/purchased` a není je tedy potřeba připočítávat.
 
 
 ## Požadavky
 * AppDaemon addon https://github.com/hassio-addons/addon-appdaemon
 > [!IMPORTANT]
-> Minimální verze Appdaeomon Addonu je **0.17.3**
+> Minimální verze AppDaemon Addonu je **0.17.3**
 
 * Integrace `homeassistant-statistics` - https://github.com/klausj1/homeassistant-statistics
-Registraci na EDC potrálu https://www.edc-cr.cz
+Registrace na EDC portálu https://www.edc-cr.cz
 
 ## Instalace
 
@@ -73,8 +73,7 @@ Nejdříve je potřeba vygenerovat `Long-lived access token`. Token se vygeneruj
 
 ![Appdaemon configuration](/images/app_daemon_config.png)
 
-
-4.Konfigurace Appdaemon se nachazí v adresáři `addon_configs/a0d7b954_appdaemon/appdaemon.yaml` . Konfigurace by měla vypadat takto:
+4. Konfigurace Appdaemon se nachází v adresáři `addon_configs/a0d7b954_appdaemon/appdaemon.yaml`. Konfigurace by měla vypadat takto:
 
 ```
 ---
@@ -117,7 +116,7 @@ hadashboard:
 > [!TIP]
 > Hodnoty v `<...>` zaměňte dle Vašeho systému.
 
-Dále v soboru `config/configuration.yaml` přidejte následující snippet:
+Dále v souboru `config/configuration.yaml` přidejte následující snippet:
 
 ```
 homeassistant:
@@ -128,7 +127,7 @@ homeassistant:
  **Restartujte HA**
 
 ### Skript
-Nejdrříve si v souboru `config/secrets.yaml` přidejte konfiguraci:
+Nejdříve si v souboru `config/secrets.yaml` přidejte konfiguraci:
 
 ```
 edc_username: ***
@@ -159,8 +158,8 @@ Aplikace reaguje na `eventy` kterými se stahují data. Pokud si chcete stáhnou
 > [!TIP]
 > Data pro aktuální měsíc a předchozí den se stahují každý den v `10:15`.
 
-### Stažení aktuálních dat 
-Pro stažení aktuálních date b HA pošlete event `edc_import_daily` bez parametrů. Stáhne se aktuální a předcjhozí měsíc.
+### Stažení aktuálních dat
+Pro stažení aktuálních dat v HA pošlete event `edc_import_daily` bez parametrů. Stáhne se aktuální a předchozí měsíc.
 
 ![EDC start Event](/images/event_edc_start.png )
 
@@ -175,12 +174,12 @@ Pro stažení dat pro libovolný měsíc je k dispozici event `edc_import_month`
 ![EDC start Event](/images/event_edc_start_month.png )
 
 > [!WARNING]
-> Po restartu HA se může stát, že enetity zmizí jelikož se neupdatují. Pak stačí jen spustit znova stahování dat pro jakýkoliv měsíc a veškerá data se zase vrátí. (Statistiky se v tomto případě nemažou)
+> Po restartu HA se může stát, že entity zmizí, jelikož se neupdatují. Pak stačí jen spustit znova stahování dat pro jakýkoliv měsíc a veškerá data se zase vrátí. (Statistiky se v tomto případě nemažou)
 
 
 
 ## Dashboard
-Pro zobrazení dat je možno použí jakoukoli komponentu která má přístup ke statistikám. V dalším textu budu používat [`apexcharts-card`](https://github.com/RomRider/apexcharts-card)
+Pro zobrazení dat je možno použít jakoukoli komponentu, která má přístup ke statistikám. V dalším textu budu používat [`apexcharts-card`](https://github.com/RomRider/apexcharts-card)
 
 Data jde zobrazit z pohledu producenta a nebo konzumenta. v obou pohledech jsou k dispozici denní a měsíční data.
 
@@ -188,7 +187,7 @@ Data jde zobrazit z pohledu producenta a nebo konzumenta. v obou pohledech jsou 
 Z pohledu producenta lze zobrazit:
 * Sdílenou energii pro jednotlivé EANy.
 * Energii prodanou do sítě, která se nepodařila nasdílet.
-* Ušlou příležitostpro jednotlivé EANy.
+* Ušlou příležitost pro jednotlivé EANy.
 
 ![Producer Hourly](/images/chart_producer_hourly.png )
 
@@ -659,7 +658,7 @@ series:
 
 ```
 
-Veškeré entity s měíční agregací jak pro producenta tak pro konzumenta, tedy například  `input_number.edc_data_consumer_purchased_<Producer  EAN>_monthly` při importu také mění svůj aktuální stav. Můžete je tedy použít k zobrazení aktuálního stavu.
+Veškeré entity s měsíční agregací jak pro producenta, tak pro konzumenta, tedy například `input_number.edc_data_consumer_purchased_<Producer EAN>_monthly` při importu také mění svůj aktuální stav. Můžete je tedy použít k zobrazení aktuálního stavu.
 
 ![Current Status](/images/current_status.png )
 
@@ -719,7 +718,7 @@ card:
 ```
 
 > [!TIP]
-> Pokud máte  nainstalované [Mushroom cards](https://github.com/piitaya/lovelace-mushroom) tak si můžete uělat malý toolbar kde jde vidět stav aplikace.
+> Pokud máte nainstalované [Mushroom cards](https://github.com/piitaya/lovelace-mushroom), tak si můžete udělat malý toolbar, kde jde vidět stav aplikace.
 
 ![State Toolbar](/images/state_toolbar.png )
 
@@ -754,11 +753,11 @@ alignment: center
 ```
 
 
-## Řešení peoblémů
+## Řešení problémů
 
 ### Aplikační Log
 
-V `Settings -> Addon -> AppDaeomn` v záložce **Log** uvidíte detailní log aplikace:
+V `Settings -> Addon -> AppDaemon` v záložce **Log** uvidíte detailní log aplikace:
 
 ![Appdaemon Log](/images/appdaemon_log.png )
 
@@ -776,12 +775,12 @@ dataDirectory: "/homeassistant/appdaemon/apps/edc_importer/data"
 
 
 ### Entity
-V prípadě, že stahování dat skončí chybou tak chybu najdete v atributu `error` u entity `input_text.edc_script_status` 
+V případě, že stahování dat skončí chybou, tak chybu najdete v atributu `error` u entity `input_text.edc_script_status`
 
 ### Import statistik
-V přápadě problémů s importem statistik [homeassistant-statistics](https://github.com/klausj1/homeassistant-statistics) si lze vypsat veškeré servisy co AppDaemon vidí. 
+V případě problémů s importem statistik [homeassistant-statistics](https://github.com/klausj1/homeassistant-statistics) si lze vypsat veškeré servisy, co AppDaemon vidí.
 
-Tototo provedete událostí `edc_print_services` a v logu AppDaemon by hste měli najít:
+Toto provedete událostí `edc_print_services` a v logu AppDaemon byste měli najít:
 
 ```
 {'namespace': 'default', 'domain': 'import_statistics', 'service': 'import_from_file'}

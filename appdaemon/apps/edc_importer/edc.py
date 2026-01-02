@@ -1008,7 +1008,7 @@ def parse_csv(csv: str, filename: str) -> Csv:
 
         if abs(sum_shared - (sum_consumers_before - sum_consumers_after)) > 0.0001:
             sum_shared_consumers = sum_consumers_before - sum_consumers_after
-            error = f"Energie nasdílená od výrobních zdrojů ({printKWh(sum_shared)}) neodpovídá energii nasdílené do oběratelských míst ({printKWh(sum_shared_consumers)})!. V reportu se použije nižší z hodnot."
+            error = f"Energie nasdílená od výrobních zdrojů ({printKWh(sum_shared)}) neodpovídá energii nasdílené do odběratelských míst ({printKWh(sum_shared_consumers)})!. V reportu se použije nižší z hodnot."
             logWarning(error, date_start)
             errors.append(error)
             if sum_shared > sum_shared_consumers:
