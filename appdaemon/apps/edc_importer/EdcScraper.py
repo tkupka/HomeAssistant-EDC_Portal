@@ -157,9 +157,30 @@ class EdcScraper:
             self.clickOnElement(driver, "//label[@title='Výběr dat pro skupinu sdílení.']")
             time.sleep(3)
             self.createScreenshot(driver, "export_group")
-            
+
             self.clickOnElement(driver, "//span[normalize-space()='Vyberte']/..")
-            self.clickOnElement(driver, f"//li[@role='option' and text() = '{self.exportGroup}']")
+            time.sleep(1)  # Wait for dropdown to open and populate
+
+            # Find export group option by iterating through options
+            # This safely handles special characters like apostrophes, quotes, etc.
+            self.uiLogger.logAndPrint(f"Searching for export group: [{self.exportGroup}]")
+            options = driver.find_elements(By.XPATH, "//li[@role='option']")
+
+            target_option = None
+            for option in options:
+                if option.text.strip() == self.exportGroup.strip():
+                    target_option = option
+                    break
+
+            if target_option is None:
+                # Show available groups to help user fix configuration
+                available_groups = [opt.text.strip() for opt in options]
+                raise Exception(f"Export group '{self.exportGroup}' not found. Available groups: {available_groups}")
+
+            self.uiLogger.logAndPrint(f"Found export group, clicking...")
+            target_option.click()
+            time.sleep(1)  # Wait for selection to process
+
             exportTypeXpath = "//span[normalize-space()='Denní hodnoty']"
             #for now use only daily since month values are crappy 
             if (self.useMonthExport(month, year)):
