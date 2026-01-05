@@ -159,12 +159,16 @@ Aplikace reaguje na `eventy` kterými se stahují data. Pokud si chcete stáhnou
 > Data pro aktuální měsíc a předchozí den se stahují každý den v `10:15`.
 
 ### Stažení aktuálních dat
-Pro stažení aktuálních dat v HA pošlete event `edc_import_daily` bez parametrů. Stáhne se aktuální a předchozí měsíc.
+Pro stažení aktuálních dat lze spustit entitu/skript "EDC Import daily data" (Settings > Devices & Services > Entities)
+nebo
+lze spustit event `edc_import_daily` (Developer tools > Events) bez parametrů. Stáhne se aktuální a předchozí měsíc
 
 ![EDC start Event](/images/event_edc_start.png )
 
-### Stažení dat 
-Pro stažení dat pro libovolný měsíc je k dispozici event `edc_import_month`. Tato událost akceptuje následující parametry:
+### Stažení dat pro libovolný měsíc
+Pro stažení dat pro libovolný měsíc lze spustit entitu/skript "EDC Import Custom Month/Year" (Settings > Devices & Services > Entities). Skript se zeptá na požadovaný měsíc a rok.
+nebo
+lze spustit event `edc_import_month`, který akceptuje následující parametry:
 * month
 * year
 
