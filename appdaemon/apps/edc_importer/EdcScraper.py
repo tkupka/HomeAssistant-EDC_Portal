@@ -82,8 +82,8 @@ class EdcScraper:
         finally:
             self.logout(driver)
             scrapeEndTime = dt.now()
-            scrapoeDuration = scrapeEndTime - scrapeStartTime
-            self.uiLogger.logAndPrint(f"********************* Finished in {scrapoeDuration} *********************", Colors.CYAN)
+            scrapeDuration = scrapeEndTime - scrapeStartTime
+            self.uiLogger.logAndPrint(f"********************* Finished in {scrapeDuration} *********************", Colors.CYAN)
         
     def initializeChromeDriver(self):
         chrome_options = Options()
@@ -104,8 +104,8 @@ class EdcScraper:
             driver = webdriver.Chrome(service=service, options=chrome_options)
             self.uiLogger.logAndPrint("Driver Loaded")
         except:
-            self.uiLogger.logAndPrint(f"RROR: Unable to initialize Chrome Driver - exitting", Colors.RED)
-            raise Exception("Unable to initialize Chrome Driver - exitting")
+            self.uiLogger.logAndPrint(f"ERROR: Unable to initialize Chrome Driver - exiting", Colors.RED)
+            raise Exception("Unable to initialize Chrome Driver - exiting")
         # Open a website
         driver.set_window_size(1920, 1080)
         return driver
@@ -115,8 +115,8 @@ class EdcScraper:
             driver.get("https://portal.edc-cr.cz/")  # Change to the website's login page
             self.uiLogger.logAndPrint("EDC Website loaded")
         except:
-            self.uiLogger.logAndPrint(f"ERROR: Unable to load website - exitting", Colors.RED)
-            raise Exception("Unable to open website - exitting")
+            self.uiLogger.logAndPrint(f"ERROR: Unable to load website - exiting", Colors.RED)
+            raise Exception("Unable to open website - exiting")
         time.sleep(2)  # Allow time for the page to load
         
     def login(self, driver):
