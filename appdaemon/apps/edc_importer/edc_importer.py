@@ -6,6 +6,7 @@ from appdaemon.plugins.hass import Hass
 import platform
 from datetime import datetime as dt
 import time
+import random
 from EdcScraper import EdcScraper
 import edc
 from EdcExporter import EdcExporter
@@ -34,8 +35,20 @@ class EDCImporter(Hass):
         self.listen_event(self.importEdcMonthlyDataEventHandler, "edc_import_month")
         self.listen_event(self.printScraperInfo, "edc_scraper_info")
         self.listen_event(self.printServicesEventHandler, "edc_print_services")
-        
-        self.run_daily(self.runDailCallback, "10:15:00")
+
+        # Randomize daily execution time across 4-hour window (10:15 - 14:15)
+        # to distribute load on EDC portal servers
+        base_hour = 10
+        base_minute = 15
+        random_minutes_offset = random.randint(0, 240)  # 0 to 240 minutes (4 hours)
+        total_minutes = base_hour * 60 + base_minute + random_minutes_offset
+        scheduled_hour = (total_minutes // 60) % 24
+        scheduled_minute = total_minutes % 60
+        scheduled_second = random.randint(0, 59)
+        scheduled_time = f"{scheduled_hour:02d}:{scheduled_minute:02d}:{scheduled_second:02d}"
+
+        self.uiLogger.logAndPrint(f"Daily scraper scheduled at {scheduled_time}", Colors.CYAN)
+        self.run_daily(self.runDailCallback, scheduled_time)
         self.set_state("input_text.edc_version", state=version,attributes={
             "name": "EDC Version",
         })
