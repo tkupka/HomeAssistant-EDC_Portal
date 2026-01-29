@@ -36,7 +36,7 @@ class EdcExporter:
 		
 	def exportProducerSharedEnergy(self, parsedData: Csv, intervals: List[Interval], grouping: GroupingOptions):
 		#create entities
-		self.uiLogger.logAndPrint(f"Exporting Shared energy for producer between EAN(s).")
+		self.uiLogger.logAndPrint(f"Exporting Shared energy for producer between EANs.")
 		#it might be consumer resolver....
 		dataResolver = partial(self.resolveProducer)
 		#dataResolver = partial(self.resolveConsumer)
@@ -45,7 +45,7 @@ class EdcExporter:
 
 	def exportConsumerSharedEnergy(self, parsedData: Csv, intervals: List[Interval], grouping: GroupingOptions):
 		#create entities
-		self.uiLogger.logAndPrint(f"Exporting Shared energy for producer between EANS.")
+		self.uiLogger.logAndPrint(f"Exporting Shared energy for consumer between EANs.")
 		#it might be consumer resolver....
 		dataResolver = partial(self.resolveConsumer)
 		calculator = partial(self.calculateBeforeAfterDifference)
@@ -102,7 +102,7 @@ class EdcExporter:
 				value = calculator(data[eanIndex])
 				if (value == 0):
 					value = 0.1
-				self.uiLogger.logAndPrint(f"Updating monthly [{statisticDate.year}::{statisticDate.month}] entity [{completeEntityName}] sate to [{value}]")
+				self.uiLogger.logAndPrint(f"Updating monthly [{statisticDate.year}::{statisticDate.month}] entity [{completeEntityName}] state to [{value}]")
 				if (self.hass != 'undefined'):
 					self.hass.set_state(completeEntityName,state=value)
 		
@@ -144,8 +144,11 @@ class EdcExporter:
 			#in case on month statistic we need to set end date otherwise sometimes HA screw up last day of the month
 			if (grouping == "1m"):
 				lastDay = calendar.monthrange(statisticDate.year, statisticDate.month)[1]
-				statisticDate = statisticDate.replace(day = lastDay)
-				self.writeData(exportFile, entityName, statisticDate, value)
+				lastDayDate = statisticDate.replace(day=lastDay, hour=0, minute=0, second=0, microsecond=0)
+				# If last day is in the future, use today instead
+				if lastDayDate > datetime.now():
+					lastDayDate = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+				self.writeData(exportFile, entityName, lastDayDate, value)
 			
 		exportFile.close()
 		return fileName
@@ -167,8 +170,7 @@ class EdcExporter:
 				filename=relativePath,
 				timezone_identifier="Europe/Vienna",
 				delimiter=";",
-				decimal="false"
-				
+				decimal="."
 			)
 			
 	def exportProducerEans(self, parsedData: Csv):

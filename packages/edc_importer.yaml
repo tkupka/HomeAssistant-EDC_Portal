@@ -27,7 +27,7 @@ input_text:
 script:
   # script to load default data
   edc_import_default_interval:
-    alias: EDC Import last month and currnt one
+    alias: EDC Import last month and current one
     sequence:
       - event: edc_import
         event_data: {}
@@ -40,6 +40,37 @@ script:
         event_data: {}
     mode: single
     icon: "mdi:calendar-start-outline"
+  edc_import_custom_month:
+    alias: EDC Import Custom Month/Year
+    description: Import EDC data for a specific month and year
+    fields:
+      month:
+        name: Month
+        description: Month to import (1-12)
+        required: true
+        example: "1"
+        selector:
+          number:
+            min: 1
+            max: 12
+            mode: box
+      year:
+        name: Year
+        description: Year to import
+        required: true
+        example: "2026"
+        selector:
+          number:
+            min: 2020
+            max: 9999
+            mode: box
+    sequence:
+      - event: edc_import_month
+        event_data:
+          month: "{{ month }}"
+          year: "{{ year }}"
+    mode: single
+    icon: "mdi:calendar-edit"
   edc_import_daily:
     alias: EDC Import daily data
     sequence:

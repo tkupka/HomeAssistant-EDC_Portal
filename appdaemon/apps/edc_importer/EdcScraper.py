@@ -1,6 +1,5 @@
 import platform
 import subprocess
-from datetime import datetime as dt
 import os,glob
 import shutil
 import time
@@ -82,8 +81,8 @@ class EdcScraper:
         finally:
             self.logout(driver)
             scrapeEndTime = dt.now()
-            scrapoeDuration = scrapeEndTime - scrapeStartTime
-            self.uiLogger.logAndPrint(f"********************* Finished in {scrapoeDuration} *********************", Colors.CYAN)
+            scrapeDuration = scrapeEndTime - scrapeStartTime
+            self.uiLogger.logAndPrint(f"********************* Finished in {scrapeDuration} *********************", Colors.CYAN)
         
     def initializeChromeDriver(self):
         chrome_options = Options()
@@ -104,8 +103,8 @@ class EdcScraper:
             driver = webdriver.Chrome(service=service, options=chrome_options)
             self.uiLogger.logAndPrint("Driver Loaded")
         except:
-            self.uiLogger.logAndPrint(f"RROR: Unable to initialize Chrome Driver - exitting", Colors.RED)
-            raise Exception("Unable to initialize Chrome Driver - exitting")
+            self.uiLogger.logAndPrint(f"ERROR: Unable to initialize Chrome Driver - exiting", Colors.RED)
+            raise Exception("Unable to initialize Chrome Driver - exiting")
         # Open a website
         driver.set_window_size(1920, 1080)
         return driver
@@ -115,8 +114,8 @@ class EdcScraper:
             driver.get("https://portal.edc-cr.cz/")  # Change to the website's login page
             self.uiLogger.logAndPrint("EDC Website loaded")
         except:
-            self.uiLogger.logAndPrint(f"ERROR: Unable to load website - exitting", Colors.RED)
-            raise Exception("Unable to open website - exitting")
+            self.uiLogger.logAndPrint(f"ERROR: Unable to load website - exiting", Colors.RED)
+            raise Exception("Unable to open website - exiting")
         time.sleep(2)  # Allow time for the page to load
         
     def login(self, driver):
@@ -157,34 +156,71 @@ class EdcScraper:
             self.clickOnElement(driver, "//label[@title='Výběr dat pro skupinu sdílení.']")
             time.sleep(3)
             self.createScreenshot(driver, "export_group")
-            
+
             self.clickOnElement(driver, "//span[normalize-space()='Vyberte']/..")
-            self.clickOnElement(driver, f"//li[@role='option' and text() = '{self.exportGroup}']")
+            time.sleep(1)  # Wait for dropdown to open and populate
+
+            # Find export group option by iterating through options
+            # This safely handles special characters like apostrophes, quotes, etc.
+            self.uiLogger.logAndPrint(f"Searching for export group: [{self.exportGroup}]")
+            options = driver.find_elements(By.XPATH, "//li[@role='option']")
+
+            target_option = None
+            for option in options:
+                if option.text.strip() == self.exportGroup.strip():
+                    target_option = option
+                    break
+
+            if target_option is None:
+                # Show available groups to help user fix configuration
+                available_groups = [opt.text.strip() for opt in options]
+                raise Exception(f"Export group '{self.exportGroup}' not found. Available groups: {available_groups}")
+
+            self.uiLogger.logAndPrint(f"Found export group, clicking...")
+            target_option.click()
+            time.sleep(1)  # Wait for selection to process
+
             exportTypeXpath = "//span[normalize-space()='Denní hodnoty']"
             #for now use only daily since month values are crappy 
             if (self.useMonthExport(month, year)):
                 exportTypeXpath = "//span[normalize-space()='Měsíční hodnoty']"
                 
             self.clickOnElement(driver, exportTypeXpath)
-            #fromField = driver.find_element(By.XPATH, "//input[@name='dateFrom']")
-            fromField = driver.find_element(By.XPATH, "//div[@class='MuiPickersSectionList-root MuiPickersInputBase-sectionsContainer css-nku1pl']")
-            
-            #toField = driver.find_element(By.XPATH, "//input[@name='dateTo']")
-            toField = driver.find_element(By.XPATH, "//div[@class='MuiPickersSectionList-root MuiPickersInputBase-sectionsContainer css-nku1pl']")
-            
-            #fromField.clear()
-            #toField.clear()
-            fromField.click()
-            fromField.send_keys(Keys.ARROW_LEFT*5)
-            fromField.send_keys("01")
-            fromField.send_keys(f"{month:02d}")
-            fromField.send_keys(f"{year}")
-            
-            toField.click()
-            toField.send_keys(Keys.ARROW_LEFT*5)
-            toField.send_keys(f"{lastDay}")
-            toField.send_keys(f"{month:02d}")
-            toField.send_keys(f"{year}")
+
+            # Fill dateFrom using MUI date picker segments
+            self.uiLogger.logAndPrint("Filling dateFrom field...")
+
+            # Day segment (first date picker)
+            day_from_xpath = "//input[@name='dateFrom']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Day' and @contenteditable='true']"
+            self.fillDateSegment(driver, day_from_xpath, "01", "dateFrom Day")
+
+            # Month segment
+            month_from_xpath = "//input[@name='dateFrom']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Month' and @contenteditable='true']"
+            self.fillDateSegment(driver, month_from_xpath, f"{month:02d}", "dateFrom Month")
+
+            # Year segment
+            year_from_xpath = "//input[@name='dateFrom']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Year' and @contenteditable='true']"
+            self.fillDateSegment(driver, year_from_xpath, year, "dateFrom Year")
+
+            self.createScreenshot(driver, "dateFrom_filled")
+
+            # Fill dateTo using MUI date picker segments
+            self.uiLogger.logAndPrint("Filling dateTo field...")
+
+            # Day segment (second date picker)
+            day_to_xpath = "//input[@name='dateTo']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Day' and @contenteditable='true']"
+            self.fillDateSegment(driver, day_to_xpath, f"{lastDay:02d}", "dateTo Day")
+
+            # Month segment
+            month_to_xpath = "//input[@name='dateTo']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Month' and @contenteditable='true']"
+            self.fillDateSegment(driver, month_to_xpath, f"{month:02d}", "dateTo Month")
+
+            # Year segment
+            year_to_xpath = "//input[@name='dateTo']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Year' and @contenteditable='true']"
+            self.fillDateSegment(driver, year_to_xpath, year, "dateTo Year")
+
+            self.createScreenshot(driver, "dateTo_filled")
+            time.sleep(1)  # Allow date pickers to update
             self.createScreenshot(driver, "export_data")
             self.clickOnElement(driver, "//button[normalize-space()='Export']")
             self.createScreenshot(driver, "export_confirm")
@@ -229,7 +265,39 @@ class EdcScraper:
         link = driver.find_element(By.XPATH, xpath)
         link.click()
         time.sleep(1)
-        
+
+    def fillDateSegment(self, driver, xpath, value, segment_name="segment"):
+        """
+        Fills a single date segment (day/month/year) in MUI date picker
+
+        Args:
+            driver: Selenium WebDriver
+            xpath: XPath to the contenteditable span
+            value: String or int value to enter
+            segment_name: Name for logging (e.g., "Day", "Month", "Year")
+        """
+        try:
+            self.uiLogger.logAndPrint(f"   :filling {segment_name} with value [{value}]", Colors.YELLOW, False)
+
+            # Wait for segment to be clickable
+            segment = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, xpath))
+            )
+
+            # Click to focus and select the segment (MUI auto-selects on click)
+            segment.click()
+            time.sleep(0.2)  # Small delay for focus to settle
+
+            # Type new value (MUI auto-advances to next field when complete)
+            segment.send_keys(str(value))
+            time.sleep(0.3)  # Wait for auto-advance
+
+            self.uiLogger.logAndPrint(f"   :{segment_name} filled successfully", Colors.GREEN, False)
+            return True
+
+        except Exception as e:
+            self.uiLogger.logAndPrint(f"ERROR: Failed to fill {segment_name}: {str(e)}", Colors.RED)
+            raise
 
     def logout(self, driver, failInError=False):
         self.uiLogger.logAndPrint(f"Logging out")
