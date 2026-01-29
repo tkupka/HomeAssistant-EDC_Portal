@@ -16,11 +16,12 @@ from edc import GroupingOptions
 
 
 class EDCImporter(Hass):
-    
+
     edcScraper = 'undefined'
     edcExporter = 'undefined'
     defaultGroupings = ["1h", "1d", "1m"]
     uiLogger: EdcLogger = 'undefined'
+    daily_handle = None
     
     def initialize(self):
         self.log("Initializing...")
@@ -29,26 +30,30 @@ class EDCImporter(Hass):
 
         self.edcScraper = EdcScraper("/usr/bin/chromedriver", self.args["username"], self.args["password"], self.args["exportGroup"], self.args["dataDirectory"], logger)
         self.edcExporter = EdcExporter(self.args["dataDirectory"], logger, self)
-        
+
         self.listen_event(self.importEdcDataEventHandler, "edc_import")
         self.listen_event(self.importEdcDailyDataEventHandler, "edc_import_daily")
         self.listen_event(self.importEdcMonthlyDataEventHandler, "edc_import_month")
         self.listen_event(self.printScraperInfo, "edc_scraper_info")
         self.listen_event(self.printServicesEventHandler, "edc_print_services")
 
-        # Randomize daily execution time across 4-hour window (10:15 - 14:15)
-        # to distribute load on EDC portal servers
-        base_hour = 10
-        base_minute = 15
-        random_minutes_offset = random.randint(0, 240)  # 0 to 240 minutes (4 hours)
-        total_minutes = base_hour * 60 + base_minute + random_minutes_offset
-        scheduled_hour = (total_minutes // 60) % 24
-        scheduled_minute = total_minutes % 60
-        scheduled_second = random.randint(0, 59)
-        scheduled_time = f"{scheduled_hour:02d}:{scheduled_minute:02d}:{scheduled_second:02d}"
+        # Set default values for scheduling entities if not already set
+        # Note: initial values are defined in packages/edc_importer.yaml
+        base_time_state = self.get_state("input_datetime.edc_daily_run_time")
+        if base_time_state in [None, "unknown", "unavailable", ""]:
+            self.call_service("input_datetime/set_datetime", entity_id="input_datetime.edc_daily_run_time", time="10:15:00")
 
-        self.uiLogger.logAndPrint(f"Daily scraper scheduled at {scheduled_time}", Colors.CYAN)
-        self.run_daily(self.runDailCallback, scheduled_time)
+        randomization_state = self.get_state("input_number.edc_daily_run_randomization")
+        if randomization_state in [None, "unknown", "unavailable", ""]:
+            self.call_service("input_number/set_value", entity_id="input_number.edc_daily_run_randomization", value=45)
+
+        # Schedule daily run with configurable time
+        self.schedule_daily_run()
+
+        # Listen for configuration changes to reschedule automatically
+        self.listen_state(self.on_schedule_config_change, "input_datetime.edc_daily_run_time")
+        self.listen_state(self.on_schedule_config_change, "input_number.edc_daily_run_randomization")
+
         self.set_state("input_text.edc_version", state=version,attributes={
             "name": "EDC Version",
         })
@@ -68,6 +73,44 @@ class EDCImporter(Hass):
         self.uiLogger.print(f"Architecture: {platform.machine()}")
         self.uiLogger.print(f"Processor: {platform.processor()}")
         self.uiLogger.print(f"Python Version: {platform.python_version()}")
+
+    def schedule_daily_run(self):
+        """Schedule or reschedule the daily scraper run."""
+        # Cancel existing schedule if any
+        if self.daily_handle:
+            self.cancel_timer(self.daily_handle)
+
+        # Read configuration from HA entities (with defaults)
+        base_time_str = self.get_state("input_datetime.edc_daily_run_time")
+        if base_time_str in [None, "unknown", "unavailable", ""]:
+            base_time_str = "10:15:00"
+
+        randomization_str = self.get_state("input_number.edc_daily_run_randomization")
+        if randomization_str in [None, "unknown", "unavailable", ""]:
+            randomization_minutes = 45
+        else:
+            randomization_minutes = int(float(randomization_str))
+
+        # Parse base time
+        time_parts = base_time_str.split(":")
+        base_hour = int(time_parts[0])
+        base_minute = int(time_parts[1])
+
+        # Calculate randomized time
+        random_minutes_offset = random.randint(0, randomization_minutes) if randomization_minutes > 0 else 0
+        total_minutes = base_hour * 60 + base_minute + random_minutes_offset
+        scheduled_hour = (total_minutes // 60) % 24
+        scheduled_minute = total_minutes % 60
+        scheduled_second = random.randint(0, 59)
+        scheduled_time = f"{scheduled_hour:02d}:{scheduled_minute:02d}:{scheduled_second:02d}"
+
+        self.uiLogger.logAndPrint(f"Daily scraper scheduled at {scheduled_time}", Colors.CYAN)
+        self.daily_handle = self.run_daily(self.runDailCallback, scheduled_time)
+
+    def on_schedule_config_change(self, entity, attribute, old, new, kwargs):
+        """Handle changes to scheduling configuration."""
+        self.uiLogger.logAndPrint(f"Schedule configuration changed ({entity}), rescheduling...", Colors.CYAN)
+        self.schedule_daily_run()
         
 
     def printServicesEventHandler(self, event_name, data, kwargs):

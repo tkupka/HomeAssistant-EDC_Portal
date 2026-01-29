@@ -156,7 +156,12 @@ Poté zkontrolujte zdali se v **HA** vytvořily statické entity.
 Aplikace reaguje na `eventy` kterými se stahují data. Pokud si chcete stáhnout data tak jsou k dispozici následující možnosti.
 
 > [!TIP]
-> Data pro aktuální měsíc a předchozí den se stahují každý den v náhodném čase mezi `10:15` a `14:15` (distribuce zátěže na EDC portál).
+> Data pro aktuální měsíc a předchozí den se stahují každý den v náhodném čase, ve výchozím nastavení mezi `10:15` a `11:00` (distribuce zátěže na EDC portál).
+> Čas spuštění a velikost náhodné odchylky lze nastavit v Home Assistantu (Settings > Devices&Services > Entities):
+> - `input_datetime.edc_daily_run_time` (EDC Daily Run Base Time) - Čas spuštění (výchozí: 10:15)
+> - `input_number.edc_daily_run_randomization` (EDC Randomization Window) - Velikost náhodné odchylky v minutách (výchozí: 45)
+>
+> Změny času spuštění nebo velikosti náhodné odchylky se projeví okamžitě bez nutnosti restartu AppDaemona.
 
 ### Stažení aktuálních dat
 Pro stažení aktuálních dat lze spustit entitu/skript "EDC Import daily data" (Settings > Devices & Services > Entities)
