@@ -102,7 +102,7 @@ class EdcExporter:
 				value = calculator(data[eanIndex])
 				if (value == 0):
 					value = 0.1
-				self.uiLogger.logAndPrint(f"Updating monthly [{statisticDate.year}::{statisticDate.month}] entity [{completeEntityName}] sate to [{value}]")
+				self.uiLogger.logAndPrint(f"Updating monthly [{statisticDate.year}::{statisticDate.month}] entity [{completeEntityName}] state to [{value}]")
 				if (self.hass != 'undefined'):
 					self.hass.set_state(completeEntityName,state=value)
 		
@@ -144,8 +144,11 @@ class EdcExporter:
 			#in case on month statistic we need to set end date otherwise sometimes HA screw up last day of the month
 			if (grouping == "1m"):
 				lastDay = calendar.monthrange(statisticDate.year, statisticDate.month)[1]
-				statisticDate = statisticDate.replace(day = lastDay)
-				self.writeData(exportFile, entityName, statisticDate, value)
+				lastDayDate = statisticDate.replace(day=lastDay, hour=0, minute=0, second=0, microsecond=0)
+				# If last day is in the future, use today instead
+				if lastDayDate > datetime.now():
+					lastDayDate = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+				self.writeData(exportFile, entityName, lastDayDate, value)
 			
 		exportFile.close()
 		return fileName
