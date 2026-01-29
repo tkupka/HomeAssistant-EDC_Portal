@@ -167,8 +167,7 @@ class EdcExporter:
 				filename=relativePath,
 				timezone_identifier="Europe/Vienna",
 				delimiter=";",
-				decimal="false"
-				
+				decimal="."
 			)
 			
 	def exportProducerEans(self, parsedData: Csv):
