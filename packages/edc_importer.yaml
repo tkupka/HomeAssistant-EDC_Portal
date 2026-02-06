@@ -3,6 +3,26 @@ template:
       - name: "EDC Running"
         unique_id: edc_running
         state: "off"
+
+input_datetime:
+  edc_daily_run_time:
+    name: EDC Daily Run Base Time
+    icon: mdi:clock-outline
+    has_date: false
+    has_time: true
+    initial: "10:15"
+
+input_number:
+  edc_daily_run_randomization:
+    name: EDC Randomization Window
+    icon: mdi:shuffle-variant
+    min: 0
+    max: 120
+    step: 5
+    initial: 45
+    unit_of_measurement: "min"
+    mode: slider
+
 input_text:
   edc_script_duration:
     name: EDC Script Duration
@@ -94,3 +114,7 @@ homeassistant:
       friendly_name: EDC Producer EANs
     edc_consumer_eans:
       friendly_name: EDC Consumer EANs
+    input_datetime.edc_daily_run_time:
+      friendly_name: EDC Daily Run Base Time
+    input_number.edc_daily_run_randomization:
+      friendly_name: EDC Randomization Window
