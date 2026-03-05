@@ -191,16 +191,11 @@ class EdcScraper:
             self.uiLogger.logAndPrint("Filling dateFrom field...")
 
             # Day segment (first date picker)
+            
             day_from_xpath = "//input[@name='dateFrom']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Day' and @contenteditable='true']"
-            self.fillDateSegment(driver, day_from_xpath, "01", "dateFrom Day")
-
-            # Month segment
-            month_from_xpath = "//input[@name='dateFrom']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Month' and @contenteditable='true']"
-            self.fillDateSegment(driver, month_from_xpath, f"{month:02d}", "dateFrom Month")
-
-            # Year segment
-            year_from_xpath = "//input[@name='dateFrom']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Year' and @contenteditable='true']"
-            self.fillDateSegment(driver, year_from_xpath, year, "dateFrom Year")
+            day_from_xpath = "//input[@name='dateFrom']"
+            self.fillDateSegment(driver, day_from_xpath, "01", f"{month:02d}", f"{year:04d}","dateFrom")
+            
 
             self.createScreenshot(driver, "dateFrom_filled")
 
@@ -208,16 +203,8 @@ class EdcScraper:
             self.uiLogger.logAndPrint("Filling dateTo field...")
 
             # Day segment (second date picker)
-            day_to_xpath = "//input[@name='dateTo']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Day' and @contenteditable='true']"
-            self.fillDateSegment(driver, day_to_xpath, f"{lastDay:02d}", "dateTo Day")
-
-            # Month segment
-            month_to_xpath = "//input[@name='dateTo']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Month' and @contenteditable='true']"
-            self.fillDateSegment(driver, month_to_xpath, f"{month:02d}", "dateTo Month")
-
-            # Year segment
-            year_to_xpath = "//input[@name='dateTo']/ancestor::div[contains(@class, 'MuiFormControl-root')]//span[@aria-label='Year' and @contenteditable='true']"
-            self.fillDateSegment(driver, year_to_xpath, year, "dateTo Year")
+            day_to_xpath = "//input[@name='dateTo']"
+            self.fillDateSegment(driver, day_to_xpath, f"{lastDay:02d}", f"{month:02d}", f"{year:04d}", "dateTo")
 
             self.createScreenshot(driver, "dateTo_filled")
             time.sleep(1)  # Allow date pickers to update
@@ -266,7 +253,7 @@ class EdcScraper:
         link.click()
         time.sleep(1)
 
-    def fillDateSegment(self, driver, xpath, value, segment_name="segment"):
+    def fillDateSegment(self, driver, xpath, day, month, year, segment_name="segment"):
         """
         Fills a single date segment (day/month/year) in MUI date picker
 
@@ -277,7 +264,7 @@ class EdcScraper:
             segment_name: Name for logging (e.g., "Day", "Month", "Year")
         """
         try:
-            self.uiLogger.logAndPrint(f"   :filling {segment_name} with value [{value}]", Colors.YELLOW, False)
+            self.uiLogger.logAndPrint(f"   :filling {segment_name} with value [{day}.{month}.{year}]", Colors.YELLOW, False)
 
             # Wait for segment to be clickable
             segment = WebDriverWait(driver, 10).until(
@@ -289,7 +276,18 @@ class EdcScraper:
             time.sleep(0.2)  # Small delay for focus to settle
 
             # Type new value (MUI auto-advances to next field when complete)
-            segment.send_keys(str(value))
+            segment.send_keys(str(Keys.HOME))
+            time.sleep(0.3)
+            segment.send_keys(str(Keys.LEFT))
+            time.sleep(0.3)
+            segment.send_keys(str(Keys.LEFT))
+            time.sleep(0.3)
+            segment.send_keys(str(day))
+            time.sleep(0.3)
+            time.sleep(0.3)
+            segment.send_keys(str(month))
+            time.sleep(0.3)        
+            segment.send_keys(str(year))
             time.sleep(0.3)  # Wait for auto-advance
 
             self.uiLogger.logAndPrint(f"   :{segment_name} filled successfully", Colors.GREEN, False)
