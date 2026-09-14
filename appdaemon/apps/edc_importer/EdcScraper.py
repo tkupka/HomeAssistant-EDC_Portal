@@ -11,7 +11,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, StaleElementReferenceException, NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 import calendar
 import logging
@@ -68,8 +68,8 @@ class EdcScraper:
         self.uiLogger.logAndPrint("********************* Scraping EDC data  *********************", Colors.CYAN)
         self.prepareDataDirectories()
         
-        driver = self.initializeChromeDriver()
         try:
+            driver = self.initializeChromeDriver()
             self.loadMainPage(driver)
             self.login(driver)
             self.exportMonth(driver, month, year)
@@ -79,7 +79,7 @@ class EdcScraper:
             self.uiLogger.logAndPrint(f"ERROR: Unable to scrape data - exiting {str(e)}", Colors.RED)
             raise Exception("Unable to scrape EDC data")
         finally:
-            self.logout(driver)
+            self.closeSession(driver)
             scrapeEndTime = dt.now()
             scrapeDuration = scrapeEndTime - scrapeStartTime
             self.uiLogger.logAndPrint(f"********************* Finished in {scrapeDuration} *********************", Colors.CYAN)
@@ -101,17 +101,26 @@ class EdcScraper:
         service = Service(self.browserExecutable)#load service
         try:
             driver = webdriver.Chrome(service=service, options=chrome_options)
+            # Open a website
+            driver.set_window_size(1920, 1080)
             self.uiLogger.logAndPrint("Driver Loaded")
         except:
             self.uiLogger.logAndPrint(f"ERROR: Unable to initialize Chrome Driver - exiting", Colors.RED)
             raise Exception("Unable to initialize Chrome Driver - exiting")
-        # Open a website
-        driver.set_window_size(1920, 1080)
         return driver
+    
+    def closeSession(self, driver):
+        if driver is not None:
+            try:
+                self.createScreenshot(driver, "before_logout")
+                self.logout(driver)
+            finally:
+                driver.quit()
 
     def loadMainPage(self, driver):
         try:
             driver.get("https://portal.edc-cr.cz/")  # Change to the website's login page
+            self.createScreenshot(driver, "main_page")
             self.uiLogger.logAndPrint("EDC Website loaded")
         except:
             self.uiLogger.logAndPrint(f"ERROR: Unable to load website - exiting", Colors.RED)
@@ -121,8 +130,7 @@ class EdcScraper:
     def login(self, driver):
         self.uiLogger.logAndPrint("Loading login page")
         try:
-            loginLink = driver.find_element(By.XPATH, "//div[contains(@class, 'MuiBox-root')]//button[contains(text(), 'Přihlášení')]")
-            loginLink.click()
+            self.clickOnElement(driver, "//div[contains(@class, 'MuiBox-root')]//button[contains(text(), 'Přihlášení')]")
             time.sleep(3)  # Allow time for the page to load
             self.createScreenshot(driver, "pre_login")
                        
@@ -240,8 +248,9 @@ class EdcScraper:
 
     def downloadExport(self, driver):
         self.clickOnElement(driver, "//table[contains(@class,'MuiTable-root')]//tr[1]//p[text()='Stáhnout']")
+        self.waitForDownload(driver)
         
-        files = glob.glob(self.downloadDirectory + '/*')
+        files = glob.glob(self.downloadDirectory + '/*.csv')
         maxFile = max(files, key=os.path.getctime)
         path = Path(maxFile)
         newPath = path.rename(Path(path.parent, f"{self.exportedFile}.csv"))
@@ -249,7 +258,9 @@ class EdcScraper:
 
     def clickOnElement(self, driver, xpath):
         self.uiLogger.logAndPrint(f"   :clicking on xpath[{xpath}]", Colors.YELLOW, False)
-        link = driver.find_element(By.XPATH, xpath)
+        #link = driver.find_element(By.XPATH, xpath)
+        wait = WebDriverWait(driver, 10, ignored_exceptions=(StaleElementReferenceException, NoSuchElementException))
+        link = wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
         link.click()
         time.sleep(1)
 
@@ -332,4 +343,58 @@ class EdcScraper:
 
 
 
-
+    def waitForDownload(self, driver, timeout = 120, poll_interval = 1):
+        end_time = time.time() + timeout
+        i = 1
+        while time.time() < end_time:
+            downloads = self.getDownloads(driver, i)
+            unfinished = self.filterUnfinishedDownloads(downloads)
+            i = i + 1
+            if not unfinished and downloads:
+                return True
+            
+            time.sleep(poll_interval)
+        
+        raise TimeoutError(f"Downloads did not finish within {timeout} seconds")
+        
+    def getDownloads(self, driver, i):
+        self.uiLogger.logAndPrint(f"Cheking downloads..")
+        original_handle = driver.current_window_handle
+        original_url = driver.current_url          # just for safety/logging
+    
+        # Open a new tab
+        driver.switch_to.new_window('tab')
+        
+        try:
+            driver.get("chrome://downloads/")
+            
+            # Give the page a moment to load the shadow DOM
+            time.sleep(0.5)
+            self.createScreenshot(driver, f"downloads_{i}")
+            script = """
+            const manager = document.querySelector('downloads-manager');
+            if (!manager) return [];
+            return manager.shadowRoot.getElementById('downloadsList').items;
+            """
+            items = driver.execute_script(script) or []
+            self.uiLogger.logAndPrint(f"Download Items: {items}")
+            return items
+        
+        finally:
+            driver.close()
+            # Switch back to the original page
+            driver.switch_to.window(original_handle)
+    
+    def filterUnfinishedDownloads(self, items):
+        unfinished = []
+        for item in items:
+            state = item.get("state")
+            # Handle both string and numeric states (Chrome versions differ)
+            if state in ("IN_PROGRESS", 1):
+                unfinished.append({
+                    "fileName": item.get("fileName") or item.get("file_name"),
+                    "filePath": item.get("filePath") or item.get("file_path") or item.get("fileUrl"),
+                    "state": state,
+                    "percent": item.get("percent") or item.get("progress")
+                })
+        return unfinished
