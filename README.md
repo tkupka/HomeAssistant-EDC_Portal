@@ -52,7 +52,7 @@ Dynamické entity:
 ## Požadavky
 * AppDaemon addon https://github.com/hassio-addons/addon-appdaemon
 > [!IMPORTANT]
-> Minimální verze AppDaemon Addonu je **0.17.3**
+> Minimální verze AppDaemon Addonu je **0.19.0**
 
 * Integrace `homeassistant-statistics` - https://github.com/klausj1/homeassistant-statistics
 * Registrace na EDC portálu https://www.edc-cr.cz
