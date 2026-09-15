@@ -55,7 +55,7 @@ Dynamické entity:
 > Minimální verze AppDaemon Addonu je **0.17.3**
 
 * Integrace `homeassistant-statistics` - https://github.com/klausj1/homeassistant-statistics
-Registrace na EDC portálu https://www.edc-cr.cz
+* Registrace na EDC portálu https://www.edc-cr.cz
 
 ## Instalace
 
